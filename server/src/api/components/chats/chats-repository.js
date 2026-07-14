@@ -37,19 +37,21 @@ async function getAllChats(serviceId) {
 }
 
 async function deleteFiles(serviceId) {
-    const chatsResult = await pool.query(
+    const { rows } = await pool.query(
         'SELECT file FROM chats WHERE service_id = $1',
         [serviceId]
     );
 
-    await Promise.allSettled(
-        chatsResult.rows
-            .filter((c) => c.file?.publicId)
-            .map((c) =>
-                cloudinary.uploader.destroy(c.file.publicId, {
-                    resource_type: c.file.resourceType,
-                })
-            )
+    const filesToDelete = rows.filter((c) => c.file?.publicId);
+
+    if (filesToDelete.length === 0) return true;
+
+    return Promise.allSettled(
+        filesToDelete.map((c) =>
+            cloudinary.uploader.destroy(c.file.publicId, {
+                resource_type: c.file.resourceType,
+            })
+        )
     );
 }
 
@@ -80,11 +82,7 @@ async function markChatAsRead(chatId, userId, userName) {
                WHERE rb->>'userId' = $3::text
            )
          RETURNING *`,
-        [
-            JSON.stringify({ userId, userName }),
-            chatId,
-            String(userId),
-        ]
+        [JSON.stringify({ userId, userName }), chatId, String(userId)]
     );
     return toCamelCase(result.rows[0]);
 }
@@ -100,11 +98,7 @@ async function markServiceChatsAsRead(serviceId, userId, userName) {
                WHERE rb->>'userId' = $3::text
            )
          RETURNING id, read_by`,
-        [
-            JSON.stringify({ userId, userName }),
-            serviceId,
-            String(userId),
-        ]
+        [JSON.stringify({ userId, userName }), serviceId, String(userId)]
     );
     return toCamelCaseRows(result.rows);
 }
