@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "678841119360",
+    "project_id": "servants-391fd",
+    "storage_bucket": "servants-391fd.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:678841119360:android:c5375defef44385197ec65",
+        "android_client_info": {
+          "package_name": "com.markie77.servants"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyD2Wkp_NgYsu4kFz3eVhL5QtI84WnjNzoc"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
