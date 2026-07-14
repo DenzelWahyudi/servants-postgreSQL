@@ -4,7 +4,7 @@ const { toCamelCase, toCamelCaseRows } = require('../../../utils/caseConvert');
 async function createAssignment(userId, roleId, status) {
     if (!status) status = 'pending';
     const result = await pool.query(
-        "INSERT INTO assignments (user_id, role_id, status) VALUES ($1, $2, $3) RETURNING *",
+        'INSERT INTO assignments (user_id, role_id, status) VALUES ($1, $2, $3) RETURNING *',
         [userId, roleId, status]
     );
     return toCamelCase(result.rows[0]);
@@ -12,20 +12,23 @@ async function createAssignment(userId, roleId, status) {
 
 async function hasUserBeenAssigned(roleId, userId) {
     const result = await pool.query(
-        "SELECT * FROM assignments WHERE role_id = $1 AND user_id = $2",
+        'SELECT * FROM assignments WHERE role_id = $1 AND user_id = $2',
         [roleId, userId]
     );
     return toCamelCase(result.rows[0]);
 }
 
 async function getUserSchedule(userId) {
-    const result = await pool.query(`
+    const result = await pool.query(
+        `
         SELECT r.name AS role_name, s.name AS service_name, s.date, s.time
         FROM assignments a
         JOIN roles r ON a.role_id = r.id
         JOIN services s ON r.service_id = s.id
         WHERE a.user_id = $1 AND a.status = 'confirmed'
-    `, [userId]);
+    `,
+        [userId]
+    );
     return toCamelCaseRows(result.rows);
 }
 
@@ -49,7 +52,8 @@ async function getPendingStatusAssignments() {
 }
 
 async function getAllUserAssignments(userId) {
-    const result = await pool.query(`
+    const result = await pool.query(
+        `
         SELECT 
             a.id,
             s.name AS service_name, 
@@ -62,36 +66,42 @@ async function getAllUserAssignments(userId) {
         JOIN roles r ON a.role_id = r.id
         JOIN services s ON r.service_id = s.id
         WHERE a.user_id = $1
-    `, [userId]);
+    `,
+        [userId]
+    );
     return toCamelCaseRows(result.rows);
 }
 
 async function updateStatus(assignmentId, status) {
-    return pool.query(
-        "UPDATE assignments SET status = $1 WHERE id = $2",
-        [status, assignmentId]
-    );
+    return pool.query('UPDATE assignments SET status = $1 WHERE id = $2', [
+        status,
+        assignmentId,
+    ]);
 }
 
 async function getUsersToRelieve(roleId) {
-    const result = await pool.query(`
+    const result = await pool.query(
+        `
         SELECT u.id AS user_id, u.name
         FROM assignments a
         JOIN users u ON a.user_id = u.id
         WHERE a.role_id = $1 AND a.status = 'confirmed'
-    `, [roleId]);
+    `,
+        [roleId]
+    );
     return toCamelCaseRows(result.rows);
 }
 
 async function relieveUser(userId, roleId) {
     return pool.query(
-        "DELETE FROM assignments WHERE user_id = $1 AND role_id = $2",
+        'DELETE FROM assignments WHERE user_id = $1 AND role_id = $2',
         [userId, roleId]
     );
 }
 
 async function getAllUserAssignedServices(userId) {
-    const result = await pool.query(`
+    const result = await pool.query(
+        `
         SELECT 
             s.id AS service_id, 
             s.name AS service_name, 
@@ -116,14 +126,17 @@ async function getAllUserAssignedServices(userId) {
         FROM assignments a
         JOIN roles r ON a.role_id = r.id
         JOIN services s ON r.service_id = s.id
-        WHERE a.user_id = $1 AND a.status = 'confirmed'
+        WHERE a.user_id = $1::bigint AND a.status = 'confirmed'
         GROUP BY s.id, s.name, s.date, s.time
-    `, [userId]);
+    `,
+        [userId]
+    );
     return toCamelCaseRows(result.rows);
 }
 
 async function getGroupDetails(serviceId) {
-    const result = await pool.query(`
+    const result = await pool.query(
+        `
         SELECT 
             u.id AS user_id, 
             u.name AS user_name, 
@@ -135,19 +148,24 @@ async function getGroupDetails(serviceId) {
         JOIN users u ON a.user_id = u.id
         WHERE r.service_id = $1 AND a.status = 'confirmed'
         GROUP BY u.id, u.name, u.phone_number, u.push_token
-    `, [serviceId]);
+    `,
+        [serviceId]
+    );
     return toCamelCaseRows(result.rows);
 }
 
 async function getGroupMemberNames(serviceId) {
-    const result = await pool.query(`
+    const result = await pool.query(
+        `
         SELECT u.id AS user_id, u.name AS user_name
         FROM assignments a
         JOIN roles r ON a.role_id = r.id
         JOIN users u ON a.user_id = u.id
         WHERE r.service_id = $1 AND a.status = 'confirmed'
         GROUP BY u.id, u.name
-    `, [serviceId]);
+    `,
+        [serviceId]
+    );
     return toCamelCaseRows(result.rows);
 }
 
@@ -162,5 +180,5 @@ module.exports = {
     relieveUser,
     getAllUserAssignedServices,
     getGroupDetails,
-    getGroupMemberNames
+    getGroupMemberNames,
 };
