@@ -15,7 +15,7 @@ type Role2 = {
 }
 
 type SavedRole = {
-    _id: string
+    id: string
     serviceId: string
     name: string
 }
@@ -28,7 +28,7 @@ type EditServiceFormProps = {
 }
 
 interface Service {
-    _id: string
+    id: string
     name: string
     date: string
     time: string
@@ -41,13 +41,13 @@ interface RoleInterface {
 }
 
 interface Role {
-    _id: string
+    id: string
     serviceId: string
     name: string,
 }
 
 interface Service {
-    _id: string,
+    id: string,
     name: string,
     date: string,
     time: string,
@@ -97,7 +97,7 @@ export function UpcomingServicesAdmin(){
                 return;
             }
 
-            setServices(prev => prev?.filter(s => s._id !== serviceId) ?? null)
+            setServices(prev => prev?.filter(s => s.id !== serviceId) ?? null)
             setLoading(false)
         } catch {
             setError("Could not connect to the server. Please try again.")
@@ -121,7 +121,7 @@ export function UpcomingServicesAdmin(){
                 return
             }
             setServices((prev) => 
-            prev?.map((s) => s._id === serviceId ? { ...s, status: newStatus} : s) ?? null)
+            prev?.map((s) => s.id === serviceId ? { ...s, status: newStatus} : s) ?? null)
         }
     }
 
@@ -141,14 +141,14 @@ export function UpcomingServicesAdmin(){
                 </thead>
                 <tbody>
                     {services?.map((s, index) => (
-                        <tr key={s._id} className="border-b border-zinc-400 text-zinc-950">
+                        <tr key={s.id} className="border-b border-zinc-400 text-zinc-950">
                             <td className="pl-3 font-medium wrap-break-word">{s.name}</td>
                             <td>{format(new Date(s.date), 'dd MMMM yyyy')}</td>
                             <td>{s.time}</td>
                             <td className="py-3 pr-4 wrap-break-word">{s.roles?.map(r => r.name).join(", ") ?? "..."}</td>
                             <td>
                                 <div className="flex items-center justify-center">
-                                    <select value={s.status} onChange={handleStatusChange(s._id)}
+                                    <select value={s.status} onChange={handleStatusChange(s.id)}
                                     className={`py-1 rounded font-semibold text-[13.5px] inline-block w-27 text-center ${s.status === "Roles Closed"
                                     ? "bg-red-200"
                                     : "bg-green-200"
@@ -162,17 +162,17 @@ export function UpcomingServicesAdmin(){
                             <td>
                                 <div className="flex gap-1 items-center justify-center">
                                     <button
-                                    onClick={() => setEditingId(s._id)}
+                                    onClick={() => setEditingId(s.id)}
                                     className="bg-zinc-100 px-2 py-1.5 rounded-lg border border-zinc-400 hover:bg-zinc-300 transition-colors">
                                         <Pencil size={15} className="text-slate-900" />
                                     </button>
                                     <div className="relative">
                                         <button
-                                        onClick={() => setToBeDelete(s._id)}
+                                        onClick={() => setToBeDelete(s.id)}
                                         className="bg-red-100 px-2 py-1.5 rounded-lg border border-zinc-400 hover:bg-red-300 transition-colors">
                                             <Trash2 size={15} className="text-red-900" />
                                         </button>
-                                        {toBeDelete === s._id && (
+                                        {toBeDelete === s.id && (
                                             <>
                                                 <div 
                                                 className="fixed inset-0 z-40"
@@ -218,7 +218,7 @@ export function UpcomingServicesAdmin(){
                     id={editingId} 
                     onClose={() =>{setEditingId(null)}}
                     onSave={(updated) => {
-                        setServices(prev => prev?.map(s => s._id === updated._id ? { ...s, ...updated, roles: updated.roles } : s)?? null)
+                        setServices(prev => prev?.map(s => s.id === updated.id ? { ...s, ...updated, roles: updated.roles } : s)?? null)
                     }}
                     token={token}
                     />
@@ -340,8 +340,8 @@ function EditServiceForm({ id, onClose, onSave, token }: EditServiceFormProps){
             }
 
             if (onClose) onClose();
-            if (onSave) onSave({_id: id, ...formData, roles: roles.map(({ name }) => ({
-                _id: "",
+            if (onSave) onSave({id: id, ...formData, roles: roles.map(({ name }) => ({
+                id: "",
                 serviceId: id,
                 name
                 }))

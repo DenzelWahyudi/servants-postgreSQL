@@ -8,7 +8,7 @@ import { useAuth } from "../hooks/useAuth.ts";
 
 
 type AdmitCardProps = {
-    _id: string
+    id: string
     roleId: string
     userName: string
     roleName: string
@@ -20,7 +20,7 @@ type AdmitCardProps = {
 }
 
 interface Assignment {
-    _id: string
+    id: string
     userName: string
     roleId: string
     roleName: string
@@ -73,8 +73,8 @@ export function AdminAdmissions(){
                 </div>
                 <div className="flex flex-wrap gap-4">
                     {assignments?.map((a) =>
-                        <div key={a._id}>
-                            <AdmitCard _id={a._id} userName={a.userName} roleId={a.roleId} roleName={a.roleName}
+                        <div key={a.id}>
+                            <AdmitCard id={a.id} userName={a.userName} roleId={a.roleId} roleName={a.roleName}
                                        serviceName={a.serviceName} date={a.date} time={a.time}
                                        onSave={() => {void fetchPendingAssignments()}} token={token}
                             />
@@ -88,7 +88,7 @@ export function AdminAdmissions(){
 }
 
 
-function AdmitCard({ _id, userName, roleId, roleName, serviceName, date, time, onSave, token }:AdmitCardProps){
+function AdmitCard({ id, userName, roleId, roleName, serviceName, date, time, onSave, token }:AdmitCardProps){
 
     const [error, setError] = useState<string | null>(null)
     const [loading, setLoading] = useState(false)
@@ -134,7 +134,7 @@ function AdmitCard({ _id, userName, roleId, roleName, serviceName, date, time, o
                 <div className="flex justify-between mt-auto">
                     <button
                     onClick={() => {
-                        void handleUpdateStatus(_id, "declined")
+                        void handleUpdateStatus(id, "declined")
                         onSave()
                     }}
                     disabled={declineLoading}
@@ -144,7 +144,7 @@ function AdmitCard({ _id, userName, roleId, roleName, serviceName, date, time, o
                         {declineLoading ? "Loading" : "Decline"}
                     </button>
                     <button
-                    onClick={() => { void handleUpdateStatus(_id, "confirmed")}}
+                    onClick={() => { void handleUpdateStatus(id, "confirmed")}}
                     disabled={loading}
                     className="bg-amber-400 text-slate-900 text-sm font-medium px-2 py-1 rounded-lg w-22
                     mt-auto hover:bg-amber-500 flex justify-center transition-colors"

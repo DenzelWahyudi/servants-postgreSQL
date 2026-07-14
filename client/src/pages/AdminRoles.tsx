@@ -6,7 +6,7 @@ import { RolesCard } from "../components/RolesCard";
 import { API_URL } from "../api"
 
 interface Service{
-	_id: string
+	id: string
 	name: string
 	date: string
 	time: string
@@ -43,9 +43,9 @@ export function AdminRoles() {
 						<Heading>Manage Roles</Heading>
 					</div>
 					{services?.map((service) => 
-						<div className="pb-4.5" key={service._id}>
+						<div className="pb-4.5" key={service.id}>
 							<RolesCard 
-							serviceId={service._id} serviceName={service.name} serviceDate={service.date} serviceTime={service.time} 
+							serviceId={service.id} serviceName={service.name} serviceDate={service.date} serviceTime={service.time} 
 							/>
 						</div>
 					)}

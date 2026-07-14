@@ -35,12 +35,12 @@ interface RelieveUser {
 }
 
 interface User {
-    _id: string
+    id: string
     name: string
 }
 
 interface Role {
-    _id: string
+    id: string
     name: string
     spotsTotal: number
     spotsFilled: number
@@ -89,7 +89,7 @@ export function RolesCard({ serviceId, serviceName, serviceTime, serviceDate }: 
                 </thead>
                 <tbody>
                     {roles?.map((r) => (
-                        <tr key={r._id} className="border-b border-zinc-200 text-zinc-900">
+                        <tr key={r.id} className="border-b border-zinc-200 text-zinc-900">
                             <td className="px-2.5 py-2 wrap-break-word">{r.name}</td>
                             <td className="py-2 wrap-break-word">{r.userNames?.join(", ") ?? "..."}</td>
                             <td className="text-center">{r.spotsFilled}/{r.spotsTotal}</td>
@@ -103,7 +103,7 @@ export function RolesCard({ serviceId, serviceName, serviceTime, serviceDate }: 
                                 <div className="flex gap-1 py-2 items-center justify-center">
                                     <button
                                     onClick={() => setRelieveData({
-                                        roleId: r._id,
+                                        roleId: r.id,
                                         serviceName: serviceName,
                                         roleName: r.name
                                     })}
@@ -114,7 +114,7 @@ export function RolesCard({ serviceId, serviceName, serviceTime, serviceDate }: 
                                     <button
                                     disabled={r.spotsFilled >= r.spotsTotal}
                                     onClick={() => setAssignData({
-                                        roleId: r._id,
+                                        roleId: r.id,
                                         serviceName: serviceName,
                                         roleName: r.name
                                     })}
@@ -358,7 +358,7 @@ function AssignRoleForm({ roleId, serviceName, roleName, onClose, token }: RoleF
                     text-left p-1 pl-2 rounded w-full transition-colors ${user ? '' : 'text-zinc-500 font-medium'}`}>
                         <option value="" disabled>Select a user</option>
                         {users?.map((user) => (
-                            <option key={user._id} value={user._id}>{user.name}</option>
+                            <option key={user.id} value={user.id}>{user.name}</option>
                         ))}
                 </select>
             </div>

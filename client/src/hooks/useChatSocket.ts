@@ -3,7 +3,7 @@ import { API_URL } from '../api';
 import {useAuth} from "./useAuth.ts";
 
 interface Chat {
-    _id: string
+    id: string
     userId: string
     userName: string
     message: string
@@ -27,7 +27,7 @@ interface ReadBy {
 }
 
 interface UploadedFile {
-    _id: string;
+    id: string;
     url: string;
     publicId: string;
     resourceType: string;
@@ -74,18 +74,18 @@ export function useChatSocket(serviceId: string | undefined) {
                             Authorization: `Bearer ${token}`,
                             "Content-Type": "application/json"
                         },
-                        body: JSON.stringify({ serviceId, chatId: data._id })
+                        body: JSON.stringify({ serviceId, chatId: data.id })
                     })
                 }
                 if (type === 'NEW_READ') {
                     setChats(prev => prev.map(chat =>
-                        chat._id === data._id ?  { ...chat, readBy: data.readBy } : chat
+                        chat.id === data.id ?  { ...chat, readBy: data.readBy } : chat
                     ))
                 }
                 if (type === 'NEW_READS') {
                     setChats((prev) =>
                         prev.map((chat) => {
-                            const matchingChat = data.find((newChat: Chat) => newChat._id === chat._id)
+                            const matchingChat = data.find((newChat: Chat) => newChat.id === chat.id)
                             return matchingChat ? { ...chat, readBy: matchingChat.readBy }
                                 : chat
                         })

@@ -2,13 +2,13 @@ import { useEffect, useState } from "react"
 import { API_URL } from "../api"
 
 interface Role {
-    _id: string
+    id: string
     serviceId: string
     name: string
 }
 
 interface Service {
-    _id: string
+    id: string
     name: string
     date: string
     time: string
@@ -51,7 +51,7 @@ export function UpcomingServices(){
                     </thead>
                     <tbody>
                         {services?.map((s) => (
-                            <tr key={s._id} className="border-b border-zinc-400 text-zinc-950">
+                            <tr key={s.id} className="border-b border-zinc-400 text-zinc-950">
                                 <td className="py-3 pl-3 font-medium">{s.name}</td>
                                 <td>{new Date(s.date).toLocaleDateString("en-GB", { year:"numeric", month: "long", day: "numeric",})}</td>
                                 <td>{s.time}</td>

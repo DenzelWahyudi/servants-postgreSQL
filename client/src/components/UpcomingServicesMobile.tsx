@@ -3,13 +3,13 @@ import { API_URL } from "../api"
 import { format } from "date-fns"
 
 interface Role {
-    _id: string
+    id: string
     serviceId: string
     name: string
 }
 
 interface Service {
-    _id: string
+    id: string
     name: string
     date: string
     time: string
@@ -41,7 +41,7 @@ export function UpcomingServicesMobile(){
             <h2 className="text-xl font-semibold text-slate-900 text-start pl-4 pt-5 pb-2">Upcoming Services</h2>
             <div className="flex flex-col gap-3">
                 {services?.map((s) => (
-                    <div key={s._id} className="rounded-lg shadow-lg border border-zinc-200 mx-4 flex flex-col gap-1 p-4">
+                    <div key={s.id} className="rounded-lg shadow-lg border border-zinc-200 mx-4 flex flex-col gap-1 p-4">
                         <div className="flex items-center justify-between">
                             <div className="flex flex-col gap-1">
                                 <h3 className="text-zinc-950 font-semibold">{s.name}</h3>
@@ -53,7 +53,7 @@ export function UpcomingServicesMobile(){
                             <hr className="text-zinc-400" />
                         </div>
                         {s.roles?.map((r) => (
-                            <span key={r._id} className="text-zinc-950 max-w-80 wrap-break-word">{r.name}</span>))}
+                            <span key={r.id} className="text-zinc-950 max-w-80 wrap-break-word">{r.name}</span>))}
                         <span className={`text-end -mt-7 ${s.status === "Roles Closed"
                                     ? "text-red-600"
                                     : "text-green-600"

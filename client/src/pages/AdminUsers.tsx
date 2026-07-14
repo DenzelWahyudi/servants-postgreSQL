@@ -8,7 +8,7 @@ import { useSearchParams } from "react-router-dom";
 import { useAuth } from "../hooks/useAuth";
 
 interface User {
-    _id: string
+    id: string
     name: string
     email: string
     phoneNumber: string
@@ -16,7 +16,7 @@ interface User {
 }
 
 interface Chosen {
-    _id: string
+    id: string
     name: string
 }
 
@@ -106,7 +106,7 @@ export function AdminUsers() {
         setSubmitLoading(true)
         setError(null)
         
-        const response = await fetch(`${API_URL}/api/users/update/name/${chosenName._id}`, {
+        const response = await fetch(`${API_URL}/api/users/update/name/${chosenName.id}`, {
             method: "PUT",
             headers: {
                 Authorization: `Bearer ${token}`,
@@ -134,7 +134,7 @@ export function AdminUsers() {
         setSubmitLoading(true)
         setError(null)
         
-        const response = await fetch(`${API_URL}/api/users/update/email/${chosenEmail._id}`, {
+        const response = await fetch(`${API_URL}/api/users/update/email/${chosenEmail.id}`, {
             method: "PUT",
             headers: {
                 Authorization: `Bearer ${token}`,
@@ -162,7 +162,7 @@ export function AdminUsers() {
         setSubmitLoading(true)
         setError(null)
         
-        const response = await fetch(`${API_URL}/api/users/update/phonenumber/${chosenPhoneNumber._id}`, {
+        const response = await fetch(`${API_URL}/api/users/update/phonenumber/${chosenPhoneNumber.id}`, {
             method: "PUT",
             headers: {
                 Authorization: `Bearer ${token}`,
@@ -246,11 +246,11 @@ export function AdminUsers() {
                                     <tr><td>Loading...</td></tr>
                                 ) : (
                                     users?.map((u, index) => (
-                                        <tr key={u._id} className={`${users.length-1 > index ? "border-b border-zinc-300" : ""} 
+                                        <tr key={u.id} className={`${users.length-1 > index ? "border-b border-zinc-300" : ""} 
                                         text-sm bg-zinc-100 hover:bg-amber-400/10 transition-colors`}>
                                             <td className="pl-2 py-2">
                                                 <div className="flex justify-between items-center">
-                                                    {chosenName && chosenName._id === u._id ? (
+                                                    {chosenName && chosenName.id === u.id ? (
                                                         <>
                                                             <div className="fixed inset-0 z-50" onClick={() => setChosenName(null)}/>
                                                             <input className="relative z-60 w-full h-full -ml-0.5 bg-zinc-100 border-2 border-zinc-400 rounded" 
@@ -259,7 +259,7 @@ export function AdminUsers() {
                                                     ) : <span className="wrap-break-word">{u.name}</span>}
 
                                                     <div className="pl-2 pr-3 relative">
-                                                        {chosenName && chosenName._id === u._id ? (
+                                                        {chosenName && chosenName.id === u.id ? (
                                                             <button 
                                                             className="relative z-60 text-right bg-green-300 px-1 py-1 border border-zinc-400 
                                                             rounded-lg hover:bg-green-500 disabled:bg-green-500 transition-colors"
@@ -272,7 +272,7 @@ export function AdminUsers() {
                                                             <button 
                                                             className="text-right bg-zinc-100 px-1 py-1 border border-zinc-400 rounded-lg
                                                             hover:bg-zinc-300 transition-colors"
-                                                            onClick={() => setChosenName({_id: u._id, name: u.name})}
+                                                            onClick={() => setChosenName({id: u.id, name: u.name})}
                                                             >
                                                                 <Pencil size={14} />
                                                             </button>
@@ -282,7 +282,7 @@ export function AdminUsers() {
                                             </td>
                                             <td className="py-2">
                                                 <div className="flex justify-between items-center">
-                                                    {chosenEmail && chosenEmail._id === u._id ? (
+                                                    {chosenEmail && chosenEmail.id === u.id ? (
                                                         <>
                                                             <div className="fixed inset-0 z-50" onClick={() => setChosenEmail(null)}/>
                                                             <input className="relative z-60 w-full h-full -ml-0.5 bg-zinc-100 border-2 border-zinc-400 rounded" 
@@ -291,7 +291,7 @@ export function AdminUsers() {
                                                     ) : <span className="wrap-break-word">{u.email}</span>}
 
                                                     <div className="pl-2 pr-3 relative">
-                                                        {chosenEmail && chosenEmail._id === u._id ? (
+                                                        {chosenEmail && chosenEmail.id === u.id ? (
                                                             <button 
                                                             className="relative z-60 text-right bg-green-300 px-1 py-1 border border-zinc-400 
                                                             rounded-lg hover:bg-green-500 disabled:bg-green-500 transition-colors"
@@ -304,7 +304,7 @@ export function AdminUsers() {
                                                             <button 
                                                             className="text-right bg-zinc-100 px-1 py-1 border border-zinc-400 rounded-lg
                                                             hover:bg-zinc-300 transition-colors"
-                                                            onClick={() => setChosenEmail({_id: u._id, name: u.email})}
+                                                            onClick={() => setChosenEmail({id: u.id, name: u.email})}
                                                             >
                                                                 <Pencil size={14} />
                                                             </button>
@@ -314,7 +314,7 @@ export function AdminUsers() {
                                             </td>
                                             <td className="py-2">
                                                 <div className="flex justify-between items-center">
-                                                    {chosenPhoneNumber && chosenPhoneNumber._id === u._id ? (
+                                                    {chosenPhoneNumber && chosenPhoneNumber.id === u.id ? (
                                                         <>
                                                             <div className="fixed inset-0 z-50" onClick={() => setChosenPhoneNumber(null)}/>
                                                             <input className="relative z-60 w-full h-full -ml-0.5 bg-zinc-100 border-2 border-zinc-400 rounded" 
@@ -323,7 +323,7 @@ export function AdminUsers() {
                                                     ) : <span className="wrap-break-word">{u.phoneNumber}</span>}
 
                                                     <div className="pl-2 pr-3 relative">
-                                                        {chosenPhoneNumber && chosenPhoneNumber._id === u._id ? (
+                                                        {chosenPhoneNumber && chosenPhoneNumber.id === u.id ? (
                                                             <button 
                                                             className="relative z-60 text-right bg-green-300 px-1 py-1 border border-zinc-400 
                                                             rounded-lg hover:bg-green-500 disabled:bg-green-500 transition-colors"
@@ -336,7 +336,7 @@ export function AdminUsers() {
                                                             <button 
                                                             className="text-right bg-zinc-100 px-1 py-1 border border-zinc-400 rounded-lg
                                                             hover:bg-zinc-300 transition-colors"
-                                                            onClick={() => setChosenPhoneNumber({_id: u._id, name: u.phoneNumber})}
+                                                            onClick={() => setChosenPhoneNumber({id: u.id, name: u.phoneNumber})}
                                                             >
                                                                 <Pencil size={14} />
                                                             </button>
@@ -348,11 +348,11 @@ export function AdminUsers() {
                                                 <div className="relative">
                                                     <button
                                                     className="bg-zinc-100 px-1.5 py-1.5 rounded-lg border border-zinc-400 hover:bg-red-300 transition-colors"
-                                                    onClick={() => setToBeDelete(u._id)}
+                                                    onClick={() => setToBeDelete(u.id)}
                                                     >
                                                         <Trash2 size={15} className="text-slate-900" />
                                                     </button>
-                                                    {toBeDelete === u._id && (
+                                                    {toBeDelete === u.id && (
                                                         <>
                                                             <div 
                                                             className="fixed inset-0 z-40"
