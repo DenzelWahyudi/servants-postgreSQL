@@ -11,7 +11,7 @@ CREATE TABLE users(
     password_hash   TEXT            NOT NULL                        ,
     push_token      TEXT                        DEFAULT NULL        ,
     role            user_role       NOT NULL    DEFAULT 'volunteer' ,
-    created_at      TIMESTAMPZ      NOT NULL    DEFAULT now()
+    created_at      TIMESTAMPTZ      NOT NULL    DEFAULT now()
 );
 
 CREATE TYPE service_status as ENUM ('Roles Open', 'Roles Closed');
@@ -53,6 +53,6 @@ CREATE TABLE chats(
     status          chat_status     NOT NULL    DEFAULT 'pending'   ,
     reply_to        JSONB                       DEFAULT NULL        ,
     read_by         JSONB           NOT NULL    DEFAULT '[]'::jsonb ,
-    created_at      TIMESTAMPZ      NOT NULL    DEFAULT now()       ,
-    updated_at      TIMESTAMPZ      NOT NULL    DEFAULT now()
+    created_at      TIMESTAMPTZ      NOT NULL    DEFAULT now()       ,
+    updated_at      TIMESTAMPTZ      NOT NULL    DEFAULT now()
 );
