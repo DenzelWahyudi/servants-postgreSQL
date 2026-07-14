@@ -35,7 +35,7 @@ interface SignUp {
 }
 
 interface Service {
-    _id: string
+    id: string
     name: string
     date: string
     time: string
@@ -43,7 +43,8 @@ interface Service {
 }
 
 interface Role {
-    _id: string
+
+    id: string
     serviceId: string
     name: string
     spotsTotal: number
@@ -125,15 +126,15 @@ export function Openings() {
                 <div className="-mt-7 flex flex-wrap gap-2 sm:gap-4 ">
                     {roles?.map((role) => {
                         if (role.spotsFilled < role.spotsTotal){
-                            const service = services?.find(s => s._id === role.serviceId && s.status == "Roles Open")
+                            const service = services?.find(s => s.id === role.serviceId && s.status == "Roles Open")
                             if (!service) return null
 
                             return (
-                                <OpeningsCard key={role._id} serviceName={service.name} 
+                                <OpeningsCard key={role.id} serviceName={service.name}
                                 date={format(new Date(service.date), 'd MMMM yyyy')} 
                                 time={service.time} 
                                 role={role.name} 
-                                roleId={role._id}
+                                roleId={role.id}
                                 userId={userId}
                                 onSave={() => {void fetchRoles()}}
                                 />

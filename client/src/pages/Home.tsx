@@ -34,7 +34,7 @@ interface Role {
 }
 
 interface Assignment {
-	_id: string
+	id: string
 	serviceName: string
 	roleName: string
 	date: string
@@ -173,7 +173,7 @@ export function Home() {
                     </thead>
                     <tbody>
                         {assignments?.map((a) => (
-                            <tr key={a._id} className="border-b border-zinc-500 text-zinc-100">
+                            <tr key={a.id} className="border-b border-zinc-500 text-zinc-100">
                                 <td className="px-3 py-3 font-medium wrap-break-word">{a.serviceName}</td>
                                 <td className="px-3">{format(new Date(a.date), 'd MMM yyyy')}</td>
                                 <td className="px-3 wrap-break-word">{a.time}</td>
@@ -205,7 +205,7 @@ export function Home() {
                     </thead>
                     <tbody>
                         {assignments?.map((a) => (
-                            <tr key={a._id} className="border-b border-zinc-500 text-zinc-100">
+                            <tr key={a.id} className="border-b border-zinc-500 text-zinc-100">
                                 <td className="px-1 py-2 font-medium wrap-break-word">{a.serviceName}</td>
                                 <td className="px-1">{format(new Date(a.date), 'd MMM yyyy')}</td>
                                 <td className="px-1 wrap-break-word">{a.time}</td>
