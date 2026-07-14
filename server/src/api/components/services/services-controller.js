@@ -1,6 +1,6 @@
 const servicesService = require('./services-service');
-const { createRoles, deleteRoles } = require('../roles/roles-service');
-const { deleteChats } = require('../chats/chats-service');
+const { createRoles } = require('../roles/roles-service');
+const { deleteFiles } = require('../chats/chats-service');
 const { errorResponder, errorTypes } = require('../../../core/errors');
 const { getUser } = require("../users/users-service");
 
@@ -17,20 +17,32 @@ async function createService(req, res, next){
         }
 
         if (!name){
-            throw errorResponder(errorTypes.VALIDATION_ERROR, 'Service name is required');
+            throw errorResponder(errorTypes.UNPROCESSABLE_ENTITY, 'Service name is required');
         }
         if (!date){
-            throw errorResponder(errorTypes.VALIDATION_ERROR, 'Date is required');
+            throw errorResponder(
+                errorTypes.UNPROCESSABLE_ENTITY,
+                'Date is required'
+            );
         }
         if (!time){
-            throw errorResponder(errorTypes.VALIDATION_ERROR, 'Time is required');
+            throw errorResponder(
+                errorTypes.UNPROCESSABLE_ENTITY,
+                'Time is required'
+            );
         }
         if (!status){
-            throw errorResponder(errorTypes.VALIDATION_ERROR, 'Status is required');
+            throw errorResponder(
+                errorTypes.UNPROCESSABLE_ENTITY,
+                'Status is required'
+            );
         }
 
         if (roles.some(role => !role.name)){
-            throw errorResponder(errorTypes.VALIDATION_ERROR, 'Role name is required');
+            throw errorResponder(
+                errorTypes.UNPROCESSABLE_ENTITY,
+                'Role name is required'
+            );
         }
 
         const serviceSuccess = await servicesService.createService(name, date, time, status);
@@ -53,7 +65,7 @@ async function createService(req, res, next){
             }
         }
 
-        return res.status(201).json({ message: 'Service created succesfully' });
+        return res.status(201).json({ message: 'Service created successfully' });
     } catch (error) {
         return next(error);
     }
@@ -101,16 +113,14 @@ async function deleteService(req, res, next){
             throw errorResponder(errorTypes.UNPROCESSABLE_ENTITY, 'Failed to get service');
         }
 
-        const successRoles = await deleteRoles(serviceId);
-        if (!successRoles){
-            throw errorResponder(errorTypes.UNPROCESSABLE_ENTITY, 'Failed to delete roles');
+        const successFiles = await deleteFiles(serviceId);
+        if (!successFiles) {
+            throw errorResponder(
+                errorTypes.UNPROCESSABLE_ENTITY,
+                'Failed to delete files'
+            );
         }
 
-        const successChats = await deleteChats(serviceId);
-        if (!successChats){
-            throw errorResponder(errorTypes.UNPROCESSABLE_ENTITY, 'Failed to delete chats');
-        }
-        
         const successService = await servicesService.deleteService(serviceId);
         if (!successService){
             throw errorResponder(errorTypes.UNPROCESSABLE_ENTITY, 'Failed to delete service');
@@ -136,20 +146,35 @@ async function updateService(req, res, next){
         }
 
         if (!name){
-            throw errorResponder(errorTypes.VALIDATION_ERROR, 'Service name is required');
+            throw errorResponder(
+                errorTypes.UNPROCESSABLE_ENTITY,
+                'Service name is required'
+            );
         }
         if (!date){
-            throw errorResponder(errorTypes.VALIDATION_ERROR, 'Date is required');
+            throw errorResponder(
+                errorTypes.UNPROCESSABLE_ENTITY,
+                'Date is required'
+            );
         }
         if (!time){
-            throw errorResponder(errorTypes.VALIDATION_ERROR, 'Time is required');
+            throw errorResponder(
+                errorTypes.UNPROCESSABLE_ENTITY,
+                'Time is required'
+            );
         }
         if (!status){
-            throw errorResponder(errorTypes.VALIDATION_ERROR, 'Status is required');
+            throw errorResponder(
+                errorTypes.UNPROCESSABLE_ENTITY,
+                'Status is required'
+            );
         }
 
         if (roles.some(role => !role.name)){
-            throw errorResponder(errorTypes.VALIDATION_ERROR, 'Role name is required');
+            throw errorResponder(
+                errorTypes.UNPROCESSABLE_ENTITY,
+                'Role name is required'
+            );
         }
 
         const service = await servicesService.getService(serviceId);
@@ -157,14 +182,12 @@ async function updateService(req, res, next){
             throw errorResponder(errorTypes.UNPROCESSABLE_ENTITY, 'Failed to get service');
         }
 
-        const successRoles = await deleteRoles(serviceId);
-        if (!successRoles){
-            throw errorResponder(errorTypes.UNPROCESSABLE_ENTITY, 'Failed to delete roles');
-        }
-
-        const successChats = await deleteChats(serviceId);
-        if (!successChats){
-            throw errorResponder(errorTypes.UNPROCESSABLE_ENTITY, 'Failed to delete chats');
+        const successFiles = await deleteFiles(serviceId);
+        if (!successFiles) {
+            throw errorResponder(
+                errorTypes.UNPROCESSABLE_ENTITY,
+                'Failed to delete files'
+            );
         }
 
         const successService = await servicesService.updateService(serviceId, name, date, time, status);
@@ -186,7 +209,7 @@ async function updateService(req, res, next){
             }
         }
 
-        return res.status(200).json({ message: 'Service updated succesfully' });
+        return res.status(200).json({ message: 'Service updated successfully' });
     } catch (error) {
         return next(error);
     }

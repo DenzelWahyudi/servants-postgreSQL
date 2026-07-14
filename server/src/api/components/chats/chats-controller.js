@@ -128,9 +128,22 @@ async function markServiceChatsAsRead(req, res, next) {
     }
 }
 
+async function deleteChat(req, res, next) {
+    try {
+        const { chatId } = req.params;
+
+        await chatsService.deleteChat(chatId);
+
+        return res.status(200).json({ message: 'Chat deleted successfully' });
+    } catch (error) {
+        next(error);
+    }
+}
+
 module.exports = {
     sendChat,
     getAllChats,
     markChatAsRead,
     markServiceChatsAsRead,
+    deleteChat,
 };

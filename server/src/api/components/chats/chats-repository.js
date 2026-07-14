@@ -36,7 +36,7 @@ async function getAllChats(serviceId) {
     return toCamelCaseRows(result.rows);
 }
 
-async function deleteChats(serviceId) {
+async function deleteFiles(serviceId) {
     const chatsResult = await pool.query(
         'SELECT file FROM chats WHERE service_id = $1',
         [serviceId]
@@ -51,8 +51,22 @@ async function deleteChats(serviceId) {
                 })
             )
     );
+}
 
-    return pool.query('DELETE FROM chats WHERE service_id = $1', [serviceId]);
+async function deleteChat(chatId) {
+    const chatResult = await pool.query(
+        'SELECT file FROM chats WHERE id = $1',
+        [chatId]
+    );
+
+    const chat = chatResult.rows[0];
+    if (chat?.file?.publicId) {
+        await cloudinary.uploader.destroy(chat.file.publicId, {
+            resource_type: chat.file.resourceType,
+        });
+    }
+
+    return pool.query('DELETE FROM chats WHERE id = $1', [chatId]);
 }
 
 async function markChatAsRead(chatId, userId, userName) {
@@ -98,7 +112,8 @@ async function markServiceChatsAsRead(serviceId, userId, userName) {
 module.exports = {
     sendChat,
     getAllChats,
-    deleteChats,
+    deleteFiles,
+    deleteChat,
     markChatAsRead,
     markServiceChatsAsRead,
 };

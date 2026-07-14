@@ -24,8 +24,12 @@ async function getAllChats(serviceId) {
     return chatsRepository.getAllChats(serviceId);
 }
 
-async function deleteChats(serviceId) {
-    return chatsRepository.deleteChats(serviceId);
+async function deleteFiles(serviceId) {
+    return chatsRepository.deleteFiles(serviceId);
+}
+
+async function deleteChat(chatId) {
+    return chatsRepository.deleteChat(chatId);
 }
 
 async function markChatAsRead(chatId, userId, userName) {
@@ -39,7 +43,8 @@ async function markServiceChatsAsRead(serviceId, userId, userName) {
 module.exports = {
     sendChat,
     getAllChats,
-    deleteChats,
+    deleteFiles,
+    deleteChat,
     markChatAsRead,
     markServiceChatsAsRead,
 };

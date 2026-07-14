@@ -13,4 +13,6 @@ module.exports = (app) => {
     route.post('/read-all', authMiddleware, chatsController.markServiceChatsAsRead)
 
     route.get('/:serviceId', chatsController.getAllChats)
+
+    route.delete('/:chatId', authMiddleware, chatsController.deleteChat)
 }
