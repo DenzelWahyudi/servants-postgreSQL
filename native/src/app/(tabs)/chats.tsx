@@ -1,7 +1,7 @@
 import React, { useEffect, useState, useCallback, useRef } from "react";
 import { 
     View, Text, TextInput, Pressable, ScrollView, 
-    KeyboardAvoidingView, Dimensions, Keyboard, Linking, Platform
+    KeyboardAvoidingView, Dimensions, Keyboard, Linking,
 } from "react-native";
 import * as DocumentPicker from 'expo-document-picker';
 import { useFocusEffect } from 'expo-router';
@@ -13,8 +13,9 @@ import { useChatSocket } from "@/hooks/useChatSocket";
 import Animated, { 
     useSharedValue, useAnimatedStyle, withTiming, withSpring,
 } from 'react-native-reanimated';
-import { scheduleOnRN } from 'react-native-worklets'
+import { scheduleOnRN } from 'react-native-worklets';
 import { GestureHandlerRootView, Gesture, GestureDetector } from 'react-native-gesture-handler';
+import { File, UploadType } from 'expo-file-system';
 
 // Interfaces
 interface Service {
@@ -260,27 +261,18 @@ export default function ChatsTab() {
             throw new Error("No file attached!")
         }
 
-        const formData = new FormData()
-        
-        // Create a strictly plain object to prevent React Native bridge parsing errors
-        const filePayload = {
-            uri: Platform.OS === 'ios' ? attachedFile.uri.replace('file://', '') : attachedFile.uri,
-            name: attachedFile.name || "file",
-            type: attachedFile.mimeType || 'application/octet-stream',
-        };
-        
-        formData.append('file', JSON.parse(JSON.stringify(filePayload)) as any)
+        const file = new File(attachedFile.uri)
 
-        const response = await fetch(`${API_URL}/api/file/upload`, {
-            method: "POST",
-            body: formData
+        const result = await file.upload(`${API_URL}/api/file/upload`, {
+            uploadType: UploadType.MULTIPART,
+            fieldName: 'file',
         })
 
-        const data = await response.json()
-        if (!response.ok) {
-            throw new Error(data.message || "Failed to upload file!")
+        if (result.status < 200 || result.status >= 300) {
+            throw new Error("Failed to upload file!")
         }
-        return data as UploadedFile
+
+        return JSON.parse(result.body) as UploadedFile
     }
 
     async function handleSend(){
