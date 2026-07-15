@@ -542,13 +542,13 @@ export default function ChatsTab() {
                         )}
                         
                         <View className={`flex-row items-end px-2 ${message.replyTo ? 'pb-2' : ''}`}>
+                            <Pressable 
+                                className="w-10 h-12 items-center justify-center mr-1"
+                                onPress={handleAttachment}
+                            >
+                                <Paperclip size={22} color="#71717a" />
+                            </Pressable>
                             <View className="flex-1 flex-row items-end bg-white rounded-3xl border border-zinc-200 shadow-sm px-2 min-h-[48px]">
-                                <Pressable 
-                                    className="p-3"
-                                    onPress={handleAttachment}
-                                >
-                                    <Paperclip size={22} color="#71717a" />
-                                </Pressable>
                                 {attachedFile ? (
                                     <View className="flex-1 flex-row items-center justify-between bg-zinc-100 rounded-2xl my-1.5 py-2 px-3 mr-1 border border-zinc-200">
                                         <View className="flex-1 mr-2">

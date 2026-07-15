@@ -6,28 +6,28 @@ import { AppState } from 'react-native';
 import { dismissAllNotifications } from '@/utils/notifications';
 
 export default function RootLayout() {
-    const appState = useRef(AppState.currentState);
-
-    useEffect(() => {
-        // Clear notifications if the app is opened directly
-        void dismissAllNotifications();
-
-        // Listen for app state changes to clear notifications when returning from background
-        const subscription = AppState.addEventListener('change', nextAppState => {
-            if (
-            appState.current.match(/inactive|background/) &&
-            nextAppState === 'active'
-            ) {
-                // User has entered the app, dismiss all notifications
-                void dismissAllNotifications();
-            }
-            appState.current = nextAppState;
-        });
-
-        return () => {
-            subscription.remove();
-        };
-    }, []);
+    // const appState = useRef(AppState.currentState);
+    //
+    // useEffect(() => {
+    //     // Clear notifications if the app is opened directly
+    //     void dismissAllNotifications();
+    //
+    //     // Listen for app state changes to clear notifications when returning from background
+    //     const subscription = AppState.addEventListener('change', nextAppState => {
+    //         if (
+    //         appState.current.match(/inactive|background/) &&
+    //         nextAppState === 'active'
+    //         ) {
+    //             // User has entered the app, dismiss all notifications
+    //             void dismissAllNotifications();
+    //         }
+    //         appState.current = nextAppState;
+    //     });
+    //
+    //     return () => {
+    //         subscription.remove();
+    //     };
+    // }, []);
 
     return (
         <AuthProvider>
