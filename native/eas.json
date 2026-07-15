@@ -10,13 +10,13 @@
         "buildType": "apk"
       },
       "env": {
-        "EXPO_PUBLIC_API_URL": "https://servants-03xr.onrender.com"
+        "EXPO_PUBLIC_API_URL": "https://servants-postgresql.onrender.com"
       }
     },
     "production": {
       "autoIncrement": true,
       "env": {
-        "EXPO_PUBLIC_API_URL": "https://servants-03xr.onrender.com"
+        "EXPO_PUBLIC_API_URL": "https://servants-postgresql.onrender.com"
       }
     }
   },
