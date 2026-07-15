@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
+import { AppState } from 'react-native';
 import { API_URL } from '../../api';
 import {useAuth} from "./useAuth";
 
@@ -68,14 +69,16 @@ export function useChatSocket(serviceId: string | undefined) {
                 const { type, data } = JSON.parse(event.data);
                 if (type === 'NEW_CHAT') {
                     setChats(prev => [...prev, data]);
-                    void fetch(`${API_URL}/api/chats/read`, {
-                        method: "POST",
-                        headers: {
-                            Authorization: `Bearer ${token}`,
-                            "Content-Type": "application/json"
-                        },
-                        body: JSON.stringify({ serviceId, chatId: data.id })
-                    })
+                    if (AppState.currentState === 'active') {
+                        void fetch(`${API_URL}/api/chats/read`, {
+                            method: "POST",
+                            headers: {
+                                Authorization: `Bearer ${token}`,
+                                "Content-Type": "application/json"
+                            },
+                            body: JSON.stringify({ serviceId, chatId: data.id })
+                        })
+                    }
                 }
                 if (type === 'NEW_READ') {
                     setChats(prev => prev.map(chat =>
@@ -107,6 +110,25 @@ export function useChatSocket(serviceId: string | undefined) {
             wsRef.current?.close();
             wsRef.current = null;
         };
+    }, [serviceId, token]);
+
+    useEffect(() => {
+        if (!serviceId) return;
+
+        const subscription = AppState.addEventListener('change', nextAppState => {
+            if (nextAppState === 'active') {
+                void fetch(`${API_URL}/api/chats/read-all`, {
+                    method: "POST",
+                    headers: {
+                        Authorization: `Bearer ${token}`,
+                        "Content-Type": "application/json"
+                    },
+                    body: JSON.stringify({ serviceId })
+                });
+            }
+        });
+
+        return () => subscription.remove();
     }, [serviceId, token]);
 
     return { chats };
