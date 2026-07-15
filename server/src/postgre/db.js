@@ -6,6 +6,10 @@ const pool = new Pool({
     host: process.env.PG_HOST,
     port: parseInt(process.env.PG_PORT, 10),
     database: process.env.PG_DATABASE,
+
+    ssl: {
+        rejectUnauthorized: false, // Prevents "unable to verify the first certificate" errors
+    },
 });
 
 module.exports = pool;
