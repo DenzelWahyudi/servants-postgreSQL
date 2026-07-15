@@ -1,8 +1,9 @@
 import React, { useEffect, useState, useCallback, useRef } from "react";
 import { 
     View, Text, TextInput, Pressable, ScrollView, 
-    KeyboardAvoidingView, Alert, Dimensions, Keyboard
+    KeyboardAvoidingView, Dimensions, Keyboard, Linking
 } from "react-native";
+import * as DocumentPicker from 'expo-document-picker';
 import { useFocusEffect } from 'expo-router';
 import { API_URL } from "../../../api";
 import { useAuth } from "@/hooks/useAuth";
@@ -126,10 +127,10 @@ function ChatBubble({ chat, isMine, members, onReply, onReadStatus, scrollToMess
                     
                     {chat.file ? (
                         <Pressable 
-                            className="bg-black/10 rounded-lg p-3 mb-1"
-                            onPress={() => Alert.alert('Attachment', 'Viewing files will be supported soon.')}
+                            className={`${isMine ? 'bg-[#c5e6b1]' : 'bg-black/10'} rounded-lg p-3 mb-1 mt-1`}
+                            onPress={() => Linking.openURL(chat.file!.url)}
                         >
-                            <Text className="text-zinc-800 font-medium">
+                            <Text className={`${isMine ? 'text-zinc-900' : 'text-zinc-800'} font-medium`}>
                                 {chat.message || 'Attached File'}
                                 <Text className="text-transparent text-[10px]">{timeSpace}</Text>
                             </Text>
@@ -171,6 +172,7 @@ export default function ChatsTab() {
     const [members, setMembers] = useState<Member[] | null>(null)
     const [readStatusChat, setReadStatusChat] = useState<Chat | null>(null)
     const [searchQuery, setSearchQuery] = useState("")
+    const [attachedFile, setAttachedFile] = useState<DocumentPicker.DocumentPickerAsset | null>(null)
 
     const scrollViewRef = useRef<ScrollView>(null)
     const messageLayouts = useRef<{ [key: string]: number }>({});
@@ -253,19 +255,52 @@ export default function ChatsTab() {
         }, 100);
     }, [chats]);
 
+    async function uploadFile(): Promise<UploadedFile> {
+        setError(null)
+        if (!attachedFile) {
+            throw new Error("No file attached!")
+        }
+
+        const formData = new FormData()
+        formData.append('file', {
+            uri: attachedFile.uri,
+            name: attachedFile.name,
+            type: attachedFile.mimeType || 'application/octet-stream',
+        } as any)
+
+        const response = await fetch(`${API_URL}/api/file/upload`, {
+            method: "POST",
+            body: formData
+        })
+
+        const data: UploadedFile = await response.json()
+        if (!response.ok) {
+            throw new Error("Failed to upload file!")
+        }
+        return data
+    }
+
     async function handleSend(){
-        if (!message.message.trim()) return;
+        if (!message.message.trim() && !attachedFile) return;
         setLoading(true)
         setError(null)
 
+        let payload = message;
+
         try {
+            if (attachedFile) {
+                const data: UploadedFile = await uploadFile()
+                payload = { ...message, message: attachedFile.name, file: data }
+                setAttachedFile(null)
+            }
+
             const response = await fetch(`${API_URL}/api/chats/send`, {
                 method: "POST",
                 headers: {
                     Authorization: `Bearer ${token}`,
                     "Content-Type": "application/json"
                 },
-                body: JSON.stringify(message)
+                body: JSON.stringify(payload)
             })
 
             const data = await response.json()
@@ -330,8 +365,19 @@ export default function ChatsTab() {
         } catch (e) {}
     }
 
-    function handleAttachment() {
-        Alert.alert("Attachment", "File uploads will be supported natively in a future update!");
+    async function handleAttachment() {
+        try {
+            const result = await DocumentPicker.getDocumentAsync({
+                type: ['image/*', 'application/pdf'],
+                copyToCacheDirectory: true,
+            });
+
+            if (!result.canceled && result.assets && result.assets.length > 0) {
+                setAttachedFile(result.assets[0]);
+            }
+        } catch (err) {
+            console.error("Failed to pick document", err);
+        }
     }
 
     // Styles for animated views
@@ -503,23 +549,40 @@ export default function ChatsTab() {
                                 >
                                     <Paperclip size={22} color="#71717a" />
                                 </Pressable>
-                                <TextInput
-                                    className="flex-1 max-h-32 text-base text-zinc-900 pt-3 pb-3 px-1"
-                                    multiline
-                                    placeholder="Message"
-                                    placeholderTextColor="#a1a1aa"
-                                    value={message.message}
-                                    onChangeText={(text) => setMessage(prev => ({...prev, message: text}))}
-                                />
+                                {attachedFile ? (
+                                    <View className="flex-1 flex-row items-center justify-between bg-zinc-100 rounded-2xl my-1.5 py-2 px-3 mr-1 border border-zinc-200">
+                                        <View className="flex-1 mr-2">
+                                            <Text className="font-medium text-[13px] text-zinc-800" numberOfLines={1}>{attachedFile.name}</Text>
+                                            <Text className="text-[10px] text-zinc-500">
+                                                {attachedFile.size ? (attachedFile.size / (1024 * 1024) >= 1 ? `${(attachedFile.size / (1024 * 1024)).toFixed(2)} MB` : `${(attachedFile.size / 1024).toFixed(1)} KB`) : ''}
+                                            </Text>
+                                        </View>
+                                        <Pressable 
+                                            className="w-7 h-7 rounded-full bg-zinc-200 items-center justify-center"
+                                            onPress={() => setAttachedFile(null)}
+                                        >
+                                            <X size={14} color="#71717a" />
+                                        </Pressable>
+                                    </View>
+                                ) : (
+                                    <TextInput
+                                        className="flex-1 max-h-32 text-base text-zinc-900 pt-3 pb-3 px-1"
+                                        multiline
+                                        placeholder="Message"
+                                        placeholderTextColor="#a1a1aa"
+                                        value={message.message}
+                                        onChangeText={(text) => setMessage(prev => ({...prev, message: text}))}
+                                    />
+                                )}
                             </View>
                             <Pressable 
                                 className={`w-12 h-12 rounded-full items-center justify-center ml-2 shadow-sm ${
-                                    message.message.trim() ? 'bg-amber-500' : 'bg-zinc-300'
+                                    (message.message.trim() || attachedFile) ? 'bg-amber-500' : 'bg-zinc-300'
                                 }`}
                                 onPress={handleSend}
-                                disabled={!message.message.trim() || loading}
+                                disabled={(!message.message.trim() && !attachedFile) || loading}
                             >
-                                <SendHorizontal size={20} color={message.message.trim() ? '#451a03' : '#71717a'} />
+                                <SendHorizontal size={20} color={(message.message.trim() || attachedFile) ? '#451a03' : '#71717a'} />
                             </Pressable>
                         </View>
                         {error && <Text className="text-center text-xs text-rose-500 mt-2">{error}</Text>}
@@ -594,12 +657,23 @@ export default function ChatsTab() {
                     {readStatusChat && (
                         <View className="bg-white p-4 shadow-sm border-b border-zinc-200 items-end">
                             <View className="relative bg-[#dcf8c6] rounded-2xl rounded-tr-sm px-3 pt-2 pb-2 max-w-[80%] shadow-sm">
-                                <Text className="text-zinc-900 text-[15px] leading-5">
-                                    {readStatusChat.message}
-                                    <Text className="text-transparent text-[10px]">
-                                        {'\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0'}
+                                {readStatusChat.file ? (
+                                    <Pressable 
+                                        className="bg-[#c5e6b1] rounded-lg p-3 mb-1 mt-1"
+                                        onPress={() => Linking.openURL(readStatusChat.file!.url)}
+                                    >
+                                        <Text className="text-zinc-900 font-medium">
+                                            {readStatusChat.message || 'Attached File'}
+                                        </Text>
+                                    </Pressable>
+                                ) : (
+                                    <Text className="text-zinc-900 text-[15px] leading-5">
+                                        {readStatusChat.message}
+                                        <Text className="text-transparent text-[10px]">
+                                            {'\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0'}
+                                        </Text>
                                     </Text>
-                                </Text>
+                                )}
                                 <View className="flex-row items-center absolute bottom-1.5 right-3 gap-1">
                                     <Text className="text-zinc-500 text-[10px]">{format(new Date(readStatusChat.createdAt), 'HH:mm')}</Text>
                                     <CheckCheck size={14} color={members && members.length > 1 && readStatusChat.readBy.filter(r => r.userId !== readStatusChat.userId).length >= members.length - 1 ? '#3b82f6' : '#9ca3af'} />
