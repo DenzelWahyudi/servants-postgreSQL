@@ -261,11 +261,15 @@ export default function ChatsTab() {
         }
 
         const formData = new FormData()
-        formData.append('file', {
+        
+        // Create a strictly plain object to prevent React Native bridge parsing errors
+        const filePayload = {
             uri: Platform.OS === 'ios' ? attachedFile.uri.replace('file://', '') : attachedFile.uri,
             name: attachedFile.name || "file",
             type: attachedFile.mimeType || 'application/octet-stream',
-        } as any)
+        };
+        
+        formData.append('file', JSON.parse(JSON.stringify(filePayload)) as any)
 
         const response = await fetch(`${API_URL}/api/file/upload`, {
             method: "POST",
