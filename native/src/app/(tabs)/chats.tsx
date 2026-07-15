@@ -1,7 +1,7 @@
 import React, { useEffect, useState, useCallback, useRef } from "react";
 import { 
     View, Text, TextInput, Pressable, ScrollView, 
-    KeyboardAvoidingView, Dimensions, Keyboard, Linking
+    KeyboardAvoidingView, Dimensions, Keyboard, Linking, Platform
 } from "react-native";
 import * as DocumentPicker from 'expo-document-picker';
 import { useFocusEffect } from 'expo-router';
@@ -262,8 +262,8 @@ export default function ChatsTab() {
 
         const formData = new FormData()
         formData.append('file', {
-            uri: attachedFile.uri,
-            name: attachedFile.name,
+            uri: Platform.OS === 'ios' ? attachedFile.uri.replace('file://', '') : attachedFile.uri,
+            name: attachedFile.name || "file",
             type: attachedFile.mimeType || 'application/octet-stream',
         } as any)
 
@@ -272,12 +272,11 @@ export default function ChatsTab() {
             body: formData
         })
 
-        const data: UploadedFile = await response.json()
+        const data = await response.json()
         if (!response.ok) {
-            setError("Failed to upload file!")
-            throw new Error("Failed to upload file!")
+            throw new Error(data.message || "Failed to upload file!")
         }
-        return data
+        return data as UploadedFile
     }
 
     async function handleSend(){
@@ -311,8 +310,8 @@ export default function ChatsTab() {
             }
 
             setMessage((prev) => ({...prev, message:"", file: null, replyTo: null}))
-        } catch {
-            setError("Could not connect to the server. Please try again.")
+        } catch (err: any) {
+            setError(err.message || "Could not connect to the server. Please try again.")
         } finally {
             setLoading(false)
         }
