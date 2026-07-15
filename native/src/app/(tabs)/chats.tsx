@@ -1,7 +1,7 @@
 import React, { useEffect, useState, useCallback, useRef } from "react";
 import { 
     View, Text, TextInput, Pressable, ScrollView, 
-    KeyboardAvoidingView, Platform, Alert, Dimensions, Keyboard
+    KeyboardAvoidingView, Alert, Dimensions, Keyboard
 } from "react-native";
 import { useFocusEffect } from 'expo-router';
 import { API_URL } from "../../../api";
