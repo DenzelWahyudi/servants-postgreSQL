@@ -275,6 +275,7 @@ export default function ChatsTab() {
         const data: UploadedFile = await response.json()
         if (!response.ok) {
             setError("Failed to upload file!")
+            throw new Error("Failed to upload file!")
         }
         return data
     }
