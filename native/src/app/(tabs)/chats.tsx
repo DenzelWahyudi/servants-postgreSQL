@@ -39,7 +39,7 @@ interface ReplyTo {
 }
 
 interface UploadedFile {
-    _id: string;
+    id: string;
     url: string;
     publicId: string;
     resourceType: string;
@@ -49,7 +49,7 @@ interface UploadedFile {
 }
 
 interface Chat {
-    _id: string
+    id: string
     userId: string
     userName: string
     message: string
@@ -164,7 +164,7 @@ export default function ChatsTab() {
         replyTo: null
     })
     const [error, setError] = useState<string | null>(null)
-    const [userId, setUserId] = useState({ _id: "" })
+    const [userId, setUserId] = useState({ id: "" })
     const [groupDetails, setGroupDetails] = useState<Group[] | null>(null)
     const [loading, setLoading] = useState(false)
     const [loadingDetails, setLoadingDetails] = useState(false)
@@ -211,7 +211,7 @@ export default function ChatsTab() {
                     },
                 })
                 const data = await response.json()
-                setUserId({ _id: data })
+                setUserId({ id: data })
             }
 
             if (token) {
@@ -456,9 +456,9 @@ export default function ChatsTab() {
 
                             return (
                                 <View 
-                                    key={c._id}
+                                    key={c.id}
                                     onLayout={(e) => {
-                                        messageLayouts.current[c._id] = e.nativeEvent.layout.y;
+                                        messageLayouts.current[c.id] = e.nativeEvent.layout.y;
                                     }}
                                 >
                                     {showDateSeparator && (
@@ -470,9 +470,9 @@ export default function ChatsTab() {
                                     )}
                                     <ChatBubble 
                                         chat={c} 
-                                        isMine={c.userId === userId._id}
+                                        isMine={c.userId === userId.id}
                                         members={members}
-                                        onReply={(chat) => setMessage(prev => ({ ...prev, replyTo: { chatId: chat._id, userId: chat.userId, userName: chat.userName, message: chat.message } }))}
+                                        onReply={(chat) => setMessage(prev => ({ ...prev, replyTo: { chatId: chat.id, userId: chat.userId, userName: chat.userName, message: chat.message } }))}
                                         onReadStatus={(chat) => setReadStatusChat(chat)}
                                         scrollToMessage={scrollToMessage}
                                     />
@@ -609,14 +609,14 @@ export default function ChatsTab() {
                     )}
 
                     {/* Read By List */}
-                    {readStatusChat && readStatusChat.readBy.filter(r => r.userId !== userId._id).length > 0 && (
+                    {readStatusChat && readStatusChat.readBy.filter(r => r.userId !== userId.id).length > 0 && (
                         <View className="bg-white mt-4 border-y border-zinc-200 shadow-sm py-2">
                             <View className="flex-row items-center px-5 py-3 gap-2">
                                 <CheckCheck size={18} color="#3b82f6" />
                                 <Text className="text-sm font-bold text-blue-500 uppercase tracking-wider">Read By</Text>
                             </View>
                             {readStatusChat.readBy
-                                .filter(r => r.userId !== userId._id)
+                                .filter(r => r.userId !== userId.id)
                                 .map((r, index, arr) => (
                                     <View key={r.userId} className={`px-5 py-3 flex-row justify-between items-center ${index < arr.length - 1 ? 'border-b border-zinc-100' : ''}`}>
                                         <Text className="text-base font-bold text-zinc-900">{r.userName}</Text>
@@ -628,14 +628,14 @@ export default function ChatsTab() {
                     )}
 
                     {/* Unread By List */}
-                    {readStatusChat && members && members.filter(m => m.userId !== userId._id && !readStatusChat.readBy.some(r => r.userId === m.userId)).length > 0 && (
+                    {readStatusChat && members && members.filter(m => m.userId !== userId.id && !readStatusChat.readBy.some(r => r.userId === m.userId)).length > 0 && (
                         <View className="bg-white mt-4 border-y border-zinc-200 shadow-sm py-2 mb-10">
                             <View className="flex-row items-center px-5 py-3 gap-2">
                                 <CheckCheck size={18} color="#9ca3af" />
                                 <Text className="text-sm font-bold text-zinc-500 uppercase tracking-wider">Remaining</Text>
                             </View>
                             {members
-                                .filter(m => m.userId !== userId._id && !readStatusChat.readBy.some(r => r.userId === m.userId))
+                                .filter(m => m.userId !== userId.id && !readStatusChat.readBy.some(r => r.userId === m.userId))
                                 .map((m, index, arr) => (
                                     <View key={m.userId} className={`px-5 py-3 flex-row justify-between items-center ${index < arr.length - 1 ? 'border-b border-zinc-100' : ''}`}>
                                         <Text className="text-base font-bold text-zinc-900">{m.userName}</Text>

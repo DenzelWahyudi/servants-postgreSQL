@@ -7,7 +7,7 @@ import { useFocusEffect } from 'expo-router';
 import { Feather } from '@expo/vector-icons';
 
 interface Service {
-    _id: string
+    id: string
     name: string
     date: string
     time: string
@@ -15,7 +15,7 @@ interface Service {
 }
 
 interface Role {
-    _id: string
+    id: string
     serviceId: string
     name: string
     spotsTotal: number
@@ -113,7 +113,7 @@ export default function OpeningsTab() {
 
     const openRoles = roles?.filter(role => {
         if (role.spotsFilled >= role.spotsTotal) return false;
-        const service = services?.find(s => s._id === role.serviceId && s.status === "Roles Open");
+        const service = services?.find(s => s.id === role.serviceId && s.status === "Roles Open");
         return !!service;
     }) || [];
 
@@ -144,11 +144,11 @@ export default function OpeningsTab() {
                             </View>
                         ) : (
                             openRoles.map(role => {
-                                const service = services?.find(s => s._id === role.serviceId);
+                                const service = services?.find(s => s.id === role.serviceId);
                                 if (!service) return null;
                                 
                                 return (
-                                    <View key={role._id} className="bg-white rounded-3xl p-5 shadow-sm border border-zinc-100">
+                                    <View key={role.id} className="bg-white rounded-3xl p-5 shadow-sm border border-zinc-100">
                                         <View className="flex-row justify-between items-start mb-4">
                                             <View className="flex-1 mr-4">
                                                 <Text className="text-zinc-900 font-bold text-lg mb-1 leading-tight">{service.name}</Text>
@@ -166,7 +166,7 @@ export default function OpeningsTab() {
 
                                         <Pressable 
                                             onPress={() => setSignUpData({
-                                                roleId: role._id,
+                                                roleId: role.id,
                                                 serviceName: service.name,
                                                 roleName: role.name,
                                                 date: format(new Date(service.date), 'd MMMM yyyy'),

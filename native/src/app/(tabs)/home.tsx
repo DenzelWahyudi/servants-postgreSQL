@@ -24,7 +24,7 @@ interface Schedule {
 }
 
 interface Role {
-    _id?: string
+    id?: string
     serviceId?: string
     name?: string
     spotsTotal: number
@@ -32,7 +32,7 @@ interface Role {
 }
 
 interface Assignment {
-    _id: string
+    id: string
     serviceName: string
     roleName: string
     date: string
@@ -41,7 +41,7 @@ interface Assignment {
 }
 
 interface Service {
-    _id: string
+    id: string
     name: string
     date: string
     time: string
@@ -191,7 +191,7 @@ export default function HomeTab() {
                         
                         <ScrollView className="p-4" contentContainerClassName="gap-4 pb-8">
                             {assignments?.map((a) => (
-                                <View key={a._id} className="bg-slate-800 p-5 rounded-2xl border border-slate-700">
+                                <View key={a.id} className="bg-slate-800 p-5 rounded-2xl border border-slate-700">
                                     <View className="flex-row justify-between items-start mb-3">
                                         <Text className="text-zinc-50 font-bold text-lg flex-1 mr-3 leading-tight">{a.serviceName}</Text>
                                         <View className={`px-3 py-1.5 rounded-lg ${
@@ -299,7 +299,7 @@ export function UpcomingServicesMobile(){
             
             <View className="gap-6">
                 {services?.map((s) => (
-                    <View key={s._id} className="rounded-[28px] bg-white shadow-sm border border-zinc-200/60 p-6">
+                    <View key={s.id} className="rounded-[28px] bg-white shadow-sm border border-zinc-200/60 p-6">
                         <View className="flex-row justify-between items-start mb-5">
                             <View className="flex-1 mr-4">
                                 <Text className="text-zinc-900 font-bold text-xl mb-2 leading-tight">{s.name}</Text>
@@ -318,7 +318,7 @@ export function UpcomingServicesMobile(){
                             <Text className="text-[11px] font-bold text-zinc-400 uppercase tracking-wider mb-3">Roles Overview</Text>
                             <View className="flex-row flex-wrap gap-2">
                                 {s.roles && s.roles.length > 0 ? s.roles.map((r) => (
-                                    <View key={r._id} className="bg-zinc-50 px-3 py-1.5 rounded-xl border border-zinc-200/80 flex-row items-center">
+                                    <View key={r.id} className="bg-zinc-50 px-3 py-1.5 rounded-xl border border-zinc-200/80 flex-row items-center">
                                         <View className="w-1.5 h-1.5 rounded-full bg-zinc-300 mr-2" />
                                         <Text className="text-zinc-600 text-xs font-semibold">{r.name}</Text>
                                     </View>
