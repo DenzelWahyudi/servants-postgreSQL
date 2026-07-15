@@ -127,12 +127,11 @@ function ChatBubble({ chat, isMine, members, onReply, onReadStatus, scrollToMess
                     
                     {chat.file ? (
                         <Pressable 
-                            className={`${isMine ? 'bg-[#c5e6b1]' : 'bg-black/10'} rounded-lg p-3 mb-1 mt-1`}
+                            className={`${isMine ? 'bg-[#c5e6b1]' : 'bg-black/10'} rounded-lg p-3 mt-1`}
                             onPress={() => Linking.openURL(chat.file!.url)}
                         >
                             <Text className={`${isMine ? 'text-zinc-900' : 'text-zinc-800'} font-medium`}>
                                 {chat.message || 'Attached File'}
-                                <Text className="text-transparent text-[10px]">{timeSpace}</Text>
                             </Text>
                         </Pressable>
                     ) : (
@@ -142,7 +141,7 @@ function ChatBubble({ chat, isMine, members, onReply, onReadStatus, scrollToMess
                         </Text>
                     )}
 
-                    <View className="flex-row items-center absolute bottom-1.5 right-3 gap-1">
+                    <View className={`flex-row items-center gap-1 ${chat.file ? 'self-end mt-1' : 'absolute bottom-1.5 right-3'}`}>
                         <Text className="text-zinc-500 text-[10px]">{format(new Date(chat.createdAt), 'HH:mm')}</Text>
                         {isMine && <CheckCheck size={14} color={isReadByAll ? '#3b82f6' : '#9ca3af'} />}
                     </View>
@@ -659,7 +658,7 @@ export default function ChatsTab() {
                             <View className="relative bg-[#dcf8c6] rounded-2xl rounded-tr-sm px-3 pt-2 pb-2 max-w-[80%] shadow-sm">
                                 {readStatusChat.file ? (
                                     <Pressable 
-                                        className="bg-[#c5e6b1] rounded-lg p-3 mb-1 mt-1"
+                                        className="bg-[#c5e6b1] rounded-lg p-3 mt-1"
                                         onPress={() => Linking.openURL(readStatusChat.file!.url)}
                                     >
                                         <Text className="text-zinc-900 font-medium">
@@ -674,7 +673,7 @@ export default function ChatsTab() {
                                         </Text>
                                     </Text>
                                 )}
-                                <View className="flex-row items-center absolute bottom-1.5 right-3 gap-1">
+                                <View className={`flex-row items-center gap-1 ${readStatusChat.file ? 'self-end mt-1' : 'absolute bottom-1.5 right-3'}`}>
                                     <Text className="text-zinc-500 text-[10px]">{format(new Date(readStatusChat.createdAt), 'HH:mm')}</Text>
                                     <CheckCheck size={14} color={members && members.length > 1 && readStatusChat.readBy.filter(r => r.userId !== readStatusChat.userId).length >= members.length - 1 ? '#3b82f6' : '#9ca3af'} />
                                 </View>
