@@ -80,6 +80,15 @@ export default function TabLayout() {
                     ),
                 }}
             />
+            <Tabs.Screen
+                name='notes'
+                options={{
+                    title: 'Notes',
+                    tabBarIcon: ({ color, size }) => (
+                        <Ionicons name='newspaper' size={size} color={color} />
+                    )
+                }}
+            />
         </Tabs>
     );
 }
