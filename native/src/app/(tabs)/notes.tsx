@@ -5,7 +5,7 @@ export default function NotesPage(){
 	const [page, setPage] = useState<string>("#14213D")
 	
 	return (
-		<View className={`flex-1 bg-[${page}]`}>
+		<View className="flex-1" style={{ backgroundColor: page }}>
 			<View className="flex-row items-center justify-evenly pt-[60px] pb-3 px-6 bg-zinc-900">
 				<Pressable className={`w-7 h-7 rounded-full border-4 border-[#34559e] ${page === "#14213D" && 'bg-[#34559e]'}`}
 				           onPress={() => setPage("#14213D")}
