@@ -1,6 +1,7 @@
 import { KeyboardAvoidingView, Pressable, ScrollView, TextInput, View } from "react-native";
 import { useState, useEffect, useRef } from "react";
 import { useNotes } from "@/hooks/useNotes";
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 const PAGE_COLORS = [
 	{ page: "#14213D", accent: "#34559e" },
@@ -27,10 +28,22 @@ export default function NotesPage(){
 		getAllPagesWithText().then(function(colors) {
 			setPagesWithText(new Set(colors));
 		});
+
+		AsyncStorage.getItem('lastOpenedNotePage').then(function(savedPage) {
+			if (savedPage) {
+				setPage(savedPage);
+			}
+		}).catch(function(error) {
+			console.error("Error loading last opened page", error);
+		});
 	}, []);
 
 	// Load note text when page color changes
 	useEffect(function loadNote() {
+		AsyncStorage.setItem('lastOpenedNotePage', page).catch(function(error) {
+			console.error("Error saving last opened page", error);
+		});
+
 		// Flush any pending save for the previous page before switching
 		if (saveTimerRef.current !== null) {
 			clearTimeout(saveTimerRef.current);
