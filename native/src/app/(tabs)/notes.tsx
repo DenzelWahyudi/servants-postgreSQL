@@ -1,8 +1,9 @@
-import { Pressable, View } from "react-native";
+import { KeyboardAvoidingView, Pressable, ScrollView, TextInput, View } from "react-native";
 import { useState } from "react";
 
 export default function NotesPage(){
 	const [page, setPage] = useState<string>("#14213D")
+	const [text, setText] = useState<string>("")
 	
 	return (
 		<View className="flex-1" style={{ backgroundColor: page }}>
@@ -29,6 +30,22 @@ export default function NotesPage(){
 				           onPress={() => setPage("#8B3A1F")}
 				/>
 			</View>
+			<KeyboardAvoidingView
+				className="flex-1"
+				behavior='padding'
+			>
+				<ScrollView
+					className="flex-1"
+				>
+						<TextInput
+							value={text}
+							onChangeText={setText}
+							multiline
+							textAlignVertical="top"
+							className="px-4 py-3 text-base text-zinc-100"
+						/>
+				</ScrollView>
+			</KeyboardAvoidingView>
 		</View>
 	)
 }
