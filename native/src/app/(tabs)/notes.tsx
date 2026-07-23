@@ -1,9 +1,59 @@
 import { KeyboardAvoidingView, Pressable, ScrollView, TextInput, View } from "react-native";
-import { useState } from "react";
+import { useState, useEffect, useRef } from "react";
+import { useNotes } from "@/hooks/useNotes";
 
 export default function NotesPage(){
+	const { getNoteText, saveNoteText } = useNotes();
 	const [page, setPage] = useState<string>("#14213D")
 	const [text, setText] = useState<string>("")
+	const saveTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+	const pendingSaveRef = useRef<{ color: string; text: string } | null>(null);
+	const saveNoteTextRef = useRef(saveNoteText);
+	saveNoteTextRef.current = saveNoteText;
+
+	// Load note text when page color changes
+	useEffect(function loadNote() {
+		// Flush any pending save for the previous page before switching
+		if (saveTimerRef.current !== null) {
+			clearTimeout(saveTimerRef.current);
+			saveTimerRef.current = null;
+		}
+		if (pendingSaveRef.current !== null) {
+			void saveNoteTextRef.current(pendingSaveRef.current.color, pendingSaveRef.current.text);
+			pendingSaveRef.current = null;
+		}
+
+		getNoteText(page).then(function(savedText) {
+			setText(savedText);
+		});
+	}, [page]);
+
+	// Flush pending save on unmount
+	useEffect(function mountCleanup() {
+		return () => {
+			if (saveTimerRef.current !== null) {
+				clearTimeout(saveTimerRef.current);
+			}
+			if (pendingSaveRef.current !== null) {
+				void saveNoteTextRef.current(pendingSaveRef.current.color, pendingSaveRef.current.text);
+			}
+		};
+	}, []);
+
+	function handleTextChange(newText: string) {
+		setText(newText);
+		pendingSaveRef.current = { color: page, text: newText };
+
+		if (saveTimerRef.current !== null) {
+			clearTimeout(saveTimerRef.current);
+		}
+
+		saveTimerRef.current = setTimeout(() => {
+			void saveNoteTextRef.current(page, newText);
+			pendingSaveRef.current = null;
+			saveTimerRef.current = null;
+		}, 300);
+	}
 	
 	return (
 		<View className="flex-1" style={{ backgroundColor: page }}>
@@ -39,7 +89,7 @@ export default function NotesPage(){
 				>
 						<TextInput
 							value={text}
-							onChangeText={setText}
+							onChangeText={handleTextChange}
 							multiline
 							textAlignVertical="top"
 							className="px-4 py-3 text-base text-zinc-100"

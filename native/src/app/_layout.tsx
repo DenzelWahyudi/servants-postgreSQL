@@ -4,6 +4,16 @@ import { AuthProvider } from '@/context/AuthProvider';
 import { useEffect, useRef } from 'react';
 import { AppState } from 'react-native';
 import { dismissAllNotifications } from '@/utils/notifications';
+import { SQLiteProvider, type SQLiteDatabase } from 'expo-sqlite';
+
+async function migrateDbAsync(db: SQLiteDatabase) {
+    await db.execAsync(`
+        CREATE TABLE IF NOT EXISTS notes (
+            color TEXT PRIMARY KEY NOT NULL,
+            text TEXT NOT NULL DEFAULT ''
+        );
+    `);
+}
 
 export default function RootLayout() {
     // const appState = useRef(AppState.currentState);
@@ -31,12 +41,14 @@ export default function RootLayout() {
 
     return (
         <AuthProvider>
-            <Stack screenOptions={{ headerShown: false }}>
-                <Stack.Screen name="login" options={{ title: 'Login' }} />
-                <Stack.Screen name="register" options={{ title: 'Register' }} />
-                <Stack.Screen name="forgot-password" options={{ title: 'Forgot Password' }} />
-                <Stack.Screen name='(tabs)' />
-            </Stack>
+            <SQLiteProvider databaseName="notes.db" onInit={migrateDbAsync}>
+                <Stack screenOptions={{ headerShown: false }}>
+                    <Stack.Screen name="login" options={{ title: 'Login' }} />
+                    <Stack.Screen name="register" options={{ title: 'Register' }} />
+                    <Stack.Screen name="forgot-password" options={{ title: 'Forgot Password' }} />
+                    <Stack.Screen name='(tabs)' />
+                </Stack>
+            </SQLiteProvider>
         </AuthProvider>
     );
 }
