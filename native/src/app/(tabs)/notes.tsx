@@ -2,14 +2,32 @@ import { KeyboardAvoidingView, Pressable, ScrollView, TextInput, View } from "re
 import { useState, useEffect, useRef } from "react";
 import { useNotes } from "@/hooks/useNotes";
 
+const PAGE_COLORS = [
+	{ page: "#14213D", accent: "#34559e" },
+	{ page: "#14532D", accent: "#2cb562" },
+	{ page: "#7A1F3D", accent: "#cc3869" },
+	{ page: "#2C3333", accent: "#667676" },
+	{ page: "#4B1D6E", accent: "#8734c6" },
+	{ page: "#0B4F5C", accent: "#18adc9" },
+	{ page: "#8B3A1F", accent: "#d4623c" },
+];
+
 export default function NotesPage(){
-	const { getNoteText, saveNoteText } = useNotes();
+	const { getNoteText, saveNoteText, getAllPagesWithText } = useNotes();
 	const [page, setPage] = useState<string>("#14213D")
 	const [text, setText] = useState<string>("")
+	const [pagesWithText, setPagesWithText] = useState<Set<string>>(new Set());
 	const saveTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 	const pendingSaveRef = useRef<{ color: string; text: string } | null>(null);
 	const saveNoteTextRef = useRef(saveNoteText);
 	saveNoteTextRef.current = saveNoteText;
+
+	// Load which pages have text on mount
+	useEffect(function loadPagesWithText() {
+		getAllPagesWithText().then(function(colors) {
+			setPagesWithText(new Set(colors));
+		});
+	}, []);
 
 	// Load note text when page color changes
 	useEffect(function loadNote() {
@@ -25,6 +43,15 @@ export default function NotesPage(){
 
 		getNoteText(page).then(function(savedText) {
 			setText(savedText);
+			setPagesWithText((prev) => {
+				const next = new Set(prev);
+				if (savedText === '') {
+					next.delete(page);
+				} else {
+					next.add(page);
+				}
+				return next;
+			});
 		});
 	}, [page]);
 
@@ -42,6 +69,15 @@ export default function NotesPage(){
 
 	function handleTextChange(newText: string) {
 		setText(newText);
+		setPagesWithText((prev) => {
+			const next = new Set(prev);
+			if (newText === '') {
+				next.delete(page);
+			} else {
+				next.add(page);
+			}
+			return next;
+		});
 		pendingSaveRef.current = { color: page, text: newText };
 
 		if (saveTimerRef.current !== null) {
@@ -58,27 +94,21 @@ export default function NotesPage(){
 	return (
 		<View className="flex-1" style={{ backgroundColor: page }}>
 			<View className="flex-row items-center justify-evenly pt-[60px] pb-3 px-6 bg-zinc-900">
-				<Pressable className={`w-7 h-7 rounded-full border-4 border-[#34559e] ${page === "#14213D" && 'bg-[#34559e]'}`}
-				           onPress={() => setPage("#14213D")}
-				/>
-				<Pressable className={`w-7 h-7 rounded-full border-4 border-[#2cb562] ${page === "#14532D" && 'bg-[#2cb562]'}`}
-				           onPress={() => setPage("#14532D")}
-				/>
-				<Pressable className={`w-7 h-7 rounded-full border-4 border-[#cc3869] ${page === "#7A1F3D" && 'bg-[#cc3869]'}`}
-				           onPress={() => setPage("#7A1F3D")}
-				/>
-				<Pressable className={`w-7 h-7 rounded-full border-4 border-[#667676] ${page === "#2C3333" && 'bg-[#667676]'}`}
-				           onPress={() => setPage("#2C3333")}
-				/>
-				<Pressable className={`w-7 h-7 rounded-full border-4 border-[#8734c6] ${page === "#4B1D6E" && 'bg-[#8734c6]'}`}
-				           onPress={() => setPage("#4B1D6E")}
-				/>
-				<Pressable className={`w-7 h-7 rounded-full border-4 border-[#18adc9] ${page === "#0B4F5C" && 'bg-[#18adc9]'}`}
-				           onPress={() => setPage("#0B4F5C")}
-				/>
-				<Pressable className={`w-7 h-7 rounded-full border-4 border-[#d4623c] ${page === "#8B3A1F" && 'bg-[#d4623c]'}`}
-				           onPress={() => setPage("#8B3A1F")}
-				/>
+				{PAGE_COLORS.map((color) => {
+					const hasText = pagesWithText.has(color.page);
+					const isSelected = page === color.page;
+					return (
+						<Pressable
+							key={color.page}
+							className="w-7 h-7 rounded-full border-4"
+							style={{
+								borderColor: hasText ? color.accent : color.page,
+								backgroundColor: isSelected ? color.accent : 'transparent',
+							}}
+							onPress={function() { setPage(color.page); }}
+						/>
+					);
+				})}
 			</View>
 			<KeyboardAvoidingView
 				className="flex-1"

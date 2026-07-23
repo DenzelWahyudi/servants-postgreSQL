@@ -18,5 +18,12 @@ export function useNotes() {
 		);
 	}
 
-	return { getNoteText, saveNoteText };
+	async function getAllPagesWithText(): Promise<string[]> {
+		const rows = await db.getAllAsync<{ color: string }>(
+			"SELECT color FROM notes WHERE text != ''"
+		);
+		return rows.map((row) => { return row.color; });
+	}
+
+	return { getNoteText, saveNoteText, getAllPagesWithText };
 }
