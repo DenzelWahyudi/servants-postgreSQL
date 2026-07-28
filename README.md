@@ -33,7 +33,7 @@ Servants is a comprehensive management system designed for organizations (like c
 - **Routing:** Expo Router v57
 - **Styling:** NativeWind (Tailwind CSS for React Native)
 - **Animations/Gestures:** React Native Reanimated & React Native Gesture Handler
-- **Storage:** AsyncStorage & Secure Store
+- **Storage:** AsyncStorage, Secure Store, & SQLite (`expo-sqlite`)
 - **Push Notifications:** Expo Notifications
 
 ## Features
@@ -47,6 +47,7 @@ Servants is a comprehensive management system designed for organizations (like c
 - **Schedule Tracking:** Comprehensive view of service schedules and volunteer assignments.
 - **Real-time Chat:** Live messaging powered by WebSockets, featuring group chats per service, image attachments, read receipts, and swipe-to-reply gestures on mobile.
 - **Admin Panel:** Dedicated admin views for managing users, admissions, roles, and services.
+- **Personal Notes (Mobile):** A color-coded, multipage local notepad on the mobile app for quick, persistent personal notes, utilizing SQLite and AsyncStorage.
 - **Cross-Platform:** Available as a responsive Web App and a Native Mobile App (iOS/Android).
 
 ## Project Structure
@@ -185,3 +186,12 @@ Can be deployed to any Node.js hosting provider (e.g., Render, Railway). Set all
 
 ### Native App
 Configured for **EAS Build** (`eas.json` included). You can build APKs or iOS builds using Expo Application Services.
+
+#### Important Note on Push Notifications and Building
+When running the app locally using **Expo Go**, native push notification registration can cause issues or unsupported behavior in the Expo Go sandbox environment. For this reason, the push notification logic has been temporarily commented out for local development.
+
+Specifically, you will find commented code in the following files:
+- `native/src/app/_layout.tsx`: Logic for dismissing push notifications when the app transitions from the background to the active state.
+- `native/src/app/(tabs)/_layout.tsx`: Logic for registering the device's push notification token and sending it to the backend database.
+
+**Action Required:** When you are ready to actually build the standalone app using EAS, you **must uncomment** the code in both of these files. This ensures that push notifications will work correctly in your production application.
