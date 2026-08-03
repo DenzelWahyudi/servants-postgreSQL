@@ -2,6 +2,7 @@ import { KeyboardAvoidingView, Pressable, ScrollView, TextInput, View } from "re
 import { useState, useEffect, useRef } from "react"
 import { useNotes } from "@/hooks/useNotes"
 import AsyncStorage from "@react-native-async-storage/async-storage"
+import { SafeAreaView } from "react-native-safe-area-context"
 
 const PAGE_COLORS = [
     { page: "#14213D", accent: "#34559e" },
@@ -116,37 +117,39 @@ export default function NotesPage() {
     }
 
     return (
-        <View className="flex-1" style={{ backgroundColor: page }}>
-            <View className="flex-row items-center justify-evenly bg-zinc-900 px-6 pb-3 pt-[60px]">
-                {PAGE_COLORS.map((color) => {
-                    const hasText = pagesWithText.has(color.page)
-                    const isSelected = page === color.page
-                    return (
-                        <Pressable
-                            key={color.page}
-                            className="h-7 w-7 rounded-full border-4"
-                            style={{
-                                borderColor: hasText ? color.accent : color.page,
-                                backgroundColor: isSelected ? color.accent : "transparent"
-                            }}
-                            onPress={function () {
-                                setPage(color.page)
-                            }}
+        <SafeAreaView className="flex-1" style={{ backgroundColor: page }}>
+            <View className="flex-1">
+                <View className="flex-row items-center justify-evenly bg-zinc-900 px-6 pb-3 pt-[60px]">
+                    {PAGE_COLORS.map((color) => {
+                        const hasText = pagesWithText.has(color.page)
+                        const isSelected = page === color.page
+                        return (
+                            <Pressable
+                                key={color.page}
+                                className="h-7 w-7 rounded-full border-4"
+                                style={{
+                                    borderColor: hasText ? color.accent : color.page,
+                                    backgroundColor: isSelected ? color.accent : "transparent"
+                                }}
+                                onPress={function () {
+                                    setPage(color.page)
+                                }}
+                            />
+                        )
+                    })}
+                </View>
+                <KeyboardAvoidingView className="flex-1" behavior="padding">
+                    <ScrollView className="flex-1">
+                        <TextInput
+                            value={text}
+                            onChangeText={handleTextChange}
+                            multiline
+                            textAlignVertical="top"
+                            className="px-4 py-3 text-base text-zinc-100"
                         />
-                    )
-                })}
+                    </ScrollView>
+                </KeyboardAvoidingView>
             </View>
-            <KeyboardAvoidingView className="flex-1" behavior="padding">
-                <ScrollView className="flex-1">
-                    <TextInput
-                        value={text}
-                        onChangeText={handleTextChange}
-                        multiline
-                        textAlignVertical="top"
-                        className="px-4 py-3 text-base text-zinc-100"
-                    />
-                </ScrollView>
-            </KeyboardAvoidingView>
-        </View>
+        </SafeAreaView>
     )
 }

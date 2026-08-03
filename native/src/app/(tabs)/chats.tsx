@@ -26,6 +26,7 @@ import Animated, {
 import { scheduleOnRN } from "react-native-worklets"
 import { GestureHandlerRootView, Gesture, GestureDetector } from "react-native-gesture-handler"
 import { File, UploadType } from "expo-file-system"
+import { SafeAreaView } from "react-native-safe-area-context"
 
 // Interfaces
 interface Service {
@@ -443,518 +444,535 @@ export default function ChatsTab() {
         ) || []
 
     return (
-        <GestureHandlerRootView className="flex-1 bg-zinc-50">
-            {/* Main Chat List Screen */}
-            <View className="flex-1 pt-12">
-                <View className="mb-4 px-6">
-                    <Text className="mb-4 text-3xl font-bold text-zinc-900">Chats</Text>
-                    <View className="flex-row items-center rounded-2xl bg-zinc-200/60 px-4 py-2.5">
-                        <Search size={20} color="#71717a" />
-                        <TextInput
-                            className="ml-3 flex-1 text-base text-zinc-900"
-                            placeholder="Search Service"
-                            placeholderTextColor="#a1a1aa"
-                            value={searchQuery}
-                            onChangeText={setSearchQuery}
-                        />
+        <SafeAreaView className="flex-1 bg-zinc-50">
+            <GestureHandlerRootView className="flex-1">
+                {/* Main Chat List Screen */}
+                <View className="flex-1">
+                    <View className="mb-4 px-6">
+                        <Text className="mb-4 text-3xl font-bold text-zinc-900">Chats</Text>
+                        <View className="flex-row items-center rounded-2xl bg-zinc-200/60 px-4 py-2.5">
+                            <Search size={20} color="#71717a" />
+                            <TextInput
+                                className="ml-3 flex-1 text-base text-zinc-900"
+                                placeholder="Search Service"
+                                placeholderTextColor="#a1a1aa"
+                                value={searchQuery}
+                                onChangeText={setSearchQuery}
+                            />
+                        </View>
                     </View>
+
+                    <ScrollView className="flex-1 px-4" contentContainerClassName="pb-20">
+                        {displayedServices.length === 0 ? (
+                            <View className="mt-10 items-center justify-center">
+                                <Text className="text-base font-medium text-zinc-500">
+                                    No chats found.
+                                </Text>
+                            </View>
+                        ) : (
+                            displayedServices.map((s) => (
+                                <Pressable
+                                    key={s.serviceId}
+                                    className="flex-row items-center border-b border-zinc-100 px-2 py-4"
+                                    onPress={() => {
+                                        setChosenService(s)
+                                        setMessage((prev) => ({ ...prev, serviceId: s.serviceId }))
+                                        void handleReadServiceChats(s.serviceId)
+                                        void fetchGroupMemberNames(s.serviceId)
+                                        setAssignedServices(
+                                            (prev) =>
+                                                prev?.map((se) =>
+                                                    se.serviceId === s.serviceId
+                                                        ? { ...se, unreadMessage: 0 }
+                                                        : se
+                                                ) ?? null
+                                        )
+                                    }}
+                                    style={({ pressed }) => ({ opacity: pressed ? 0.7 : 1 })}
+                                >
+                                    <View className="mr-4 h-14 w-14 items-center justify-center rounded-full bg-amber-100">
+                                        <Text className="text-xl font-bold text-amber-700">
+                                            {s.serviceName.substring(0, 1).toUpperCase()}
+                                        </Text>
+                                    </View>
+                                    <View className="flex-1 justify-center">
+                                        <Text
+                                            className="mb-1 text-lg font-bold text-zinc-900"
+                                            numberOfLines={1}
+                                        >
+                                            {s.serviceName}
+                                        </Text>
+                                        <Text className="text-sm font-medium text-zinc-500">
+                                            {format(new Date(s.date), "d MMMM yyyy")}
+                                        </Text>
+                                    </View>
+                                    <View className="ml-2 items-end justify-center">
+                                        <Text className="mb-1 text-xs font-semibold text-zinc-400">
+                                            {s.time}
+                                        </Text>
+                                        {s.unreadMessage > 0 ? (
+                                            <View className="h-5 min-w-[20px] items-center justify-center rounded-full bg-indigo-500 px-1.5">
+                                                <Text className="text-[10px] font-bold text-white">
+                                                    {s.unreadMessage}
+                                                </Text>
+                                            </View>
+                                        ) : (
+                                            <View className="h-5 min-w-[20px]" />
+                                        )}
+                                    </View>
+                                </Pressable>
+                            ))
+                        )}
+                    </ScrollView>
                 </View>
 
-                <ScrollView className="flex-1 px-4" contentContainerClassName="pb-20">
-                    {displayedServices.length === 0 ? (
-                        <View className="mt-10 items-center justify-center">
-                            <Text className="text-base font-medium text-zinc-500">
-                                No chats found.
-                            </Text>
-                        </View>
-                    ) : (
-                        displayedServices.map((s) => (
+                {/* Chat Room Overlay */}
+                <Animated.View
+                    style={[
+                        chatRoomStyle,
+                        {
+                            position: "absolute",
+                            width: "100%",
+                            height: "100%",
+                            backgroundColor: "#f4f4f5"
+                        }
+                    ]}
+                >
+                    <KeyboardAvoidingView behavior="padding" className="flex-1">
+                        {/* Header */}
+                        <View className="z-10 flex-row items-center bg-slate-900 px-2 pb-4 pt-12 shadow-md">
                             <Pressable
-                                key={s.serviceId}
-                                className="flex-row items-center border-b border-zinc-100 px-2 py-4"
+                                className="mr-1 p-2"
                                 onPress={() => {
-                                    setChosenService(s)
-                                    setMessage((prev) => ({ ...prev, serviceId: s.serviceId }))
-                                    void handleReadServiceChats(s.serviceId)
-                                    void fetchGroupMemberNames(s.serviceId)
-                                    setAssignedServices(
-                                        (prev) =>
-                                            prev?.map((se) =>
-                                                se.serviceId === s.serviceId
-                                                    ? { ...se, unreadMessage: 0 }
-                                                    : se
-                                            ) ?? null
-                                    )
+                                    setChosenService(null)
+                                    setMessage((prev) => ({ ...prev, replyTo: null }))
                                 }}
-                                style={({ pressed }) => ({ opacity: pressed ? 0.7 : 1 })}
                             >
-                                <View className="mr-4 h-14 w-14 items-center justify-center rounded-full bg-amber-100">
-                                    <Text className="text-xl font-bold text-amber-700">
-                                        {s.serviceName.substring(0, 1).toUpperCase()}
+                                <ChevronLeft size={28} color="#f4f4f5" />
+                            </Pressable>
+                            <Pressable
+                                className="flex-1 flex-row items-center"
+                                onPress={() => fetchGroupDetails(chosenService!.serviceId)}
+                                disabled={loadingDetails}
+                            >
+                                <View className="mr-3 h-10 w-10 items-center justify-center rounded-full bg-amber-500">
+                                    <Text className="text-lg font-bold text-slate-900">
+                                        {chosenService?.serviceName.substring(0, 1).toUpperCase()}
                                     </Text>
                                 </View>
-                                <View className="flex-1 justify-center">
+                                <View className="flex-1">
                                     <Text
-                                        className="mb-1 text-lg font-bold text-zinc-900"
+                                        className="text-lg font-bold leading-tight text-zinc-50"
                                         numberOfLines={1}
                                     >
-                                        {s.serviceName}
+                                        {chosenService?.serviceName}
                                     </Text>
-                                    <Text className="text-sm font-medium text-zinc-500">
-                                        {format(new Date(s.date), "d MMMM yyyy")}
+                                    <Text className="text-xs text-zinc-400">
+                                        {chosenService
+                                            ? `${format(new Date(chosenService.date), "d MMM yyyy")} • ${chosenService.time}`
+                                            : ""}
                                     </Text>
-                                </View>
-                                <View className="ml-2 items-end justify-center">
-                                    <Text className="mb-1 text-xs font-semibold text-zinc-400">
-                                        {s.time}
-                                    </Text>
-                                    {s.unreadMessage > 0 ? (
-                                        <View className="h-5 min-w-[20px] items-center justify-center rounded-full bg-indigo-500 px-1.5">
-                                            <Text className="text-[10px] font-bold text-white">
-                                                {s.unreadMessage}
-                                            </Text>
-                                        </View>
-                                    ) : (
-                                        <View className="h-5 min-w-[20px]" />
-                                    )}
                                 </View>
                             </Pressable>
-                        ))
-                    )}
-                </ScrollView>
-            </View>
+                        </View>
 
-            {/* Chat Room Overlay */}
-            <Animated.View
-                style={[
-                    chatRoomStyle,
-                    {
-                        position: "absolute",
-                        width: "100%",
-                        height: "100%",
-                        backgroundColor: "#f4f4f5"
-                    }
-                ]}
-            >
-                <KeyboardAvoidingView behavior="padding" className="flex-1">
-                    {/* Header */}
-                    <View className="z-10 flex-row items-center bg-slate-900 px-2 pb-4 pt-12 shadow-md">
-                        <Pressable
-                            className="mr-1 p-2"
-                            onPress={() => {
-                                setChosenService(null)
-                                setMessage((prev) => ({ ...prev, replyTo: null }))
-                            }}
-                        >
+                        {/* Chat Area */}
+                        <View className="flex-1 bg-[#efeae2]">
+                            <ScrollView
+                                ref={scrollViewRef}
+                                className="flex-1 px-3 pt-4"
+                                contentContainerClassName="pb-6"
+                                onContentSizeChange={() =>
+                                    scrollViewRef.current?.scrollToEnd({ animated: true })
+                                }
+                            >
+                                {chats?.map((c, index) => {
+                                    const currentDate = new Date(c.createdAt)
+                                    const prevDate =
+                                        index > 0 ? new Date(chats[index - 1].createdAt) : null
+                                    const showDateSeparator =
+                                        !prevDate ||
+                                        currentDate.toDateString() !== prevDate.toDateString()
+
+                                    return (
+                                        <View
+                                            key={c.id}
+                                            onLayout={(e) => {
+                                                messageLayouts.current[c.id] =
+                                                    e.nativeEvent.layout.y
+                                            }}
+                                        >
+                                            {showDateSeparator && (
+                                                <View className="my-3 items-center">
+                                                    <View className="rounded-lg bg-white/80 px-3 py-1 shadow-sm">
+                                                        <Text className="text-xs font-medium uppercase text-zinc-500">
+                                                            {format(currentDate, "EEE, d MMMM")}
+                                                        </Text>
+                                                    </View>
+                                                </View>
+                                            )}
+                                            <ChatBubble
+                                                chat={c}
+                                                isMine={c.userId === userId.id}
+                                                members={members}
+                                                onReply={(chat) =>
+                                                    setMessage((prev) => ({
+                                                        ...prev,
+                                                        replyTo: {
+                                                            chatId: chat.id,
+                                                            userId: chat.userId,
+                                                            userName: chat.userName,
+                                                            message: chat.message
+                                                        }
+                                                    }))
+                                                }
+                                                onReadStatus={(chat) => setReadStatusChat(chat)}
+                                                scrollToMessage={scrollToMessage}
+                                            />
+                                        </View>
+                                    )
+                                })}
+                            </ScrollView>
+
+                            {/* Input Area */}
+                            <View className="border-t border-zinc-200 bg-zinc-50 px-2 py-2">
+                                {message.replyTo && (
+                                    <View className="mx-2 mt-1 flex-row items-start justify-between rounded-t-2xl border-l-4 border-rose-500 bg-zinc-100 p-3">
+                                        <View className="flex-1">
+                                            <Text className="mb-1 text-sm font-bold text-rose-500">
+                                                {message.replyTo.userName}
+                                            </Text>
+                                            <Text
+                                                className="text-sm text-zinc-600"
+                                                numberOfLines={2}
+                                            >
+                                                {message.replyTo.message}
+                                            </Text>
+                                        </View>
+                                        <Pressable
+                                            onPress={() =>
+                                                setMessage((prev) => ({ ...prev, replyTo: null }))
+                                            }
+                                            className="p-1"
+                                        >
+                                            <X size={18} color="#a1a1aa" />
+                                        </Pressable>
+                                    </View>
+                                )}
+
+                                <View
+                                    className={`flex-row items-end px-2 ${message.replyTo ? "pb-2" : ""}`}
+                                >
+                                    <Pressable
+                                        className="mr-1 h-12 w-10 items-center justify-center"
+                                        onPress={handleAttachment}
+                                    >
+                                        <Paperclip size={22} color="#71717a" />
+                                    </Pressable>
+                                    <View className="min-h-[48px] flex-1 flex-row items-end rounded-3xl border border-zinc-200 bg-white px-2 shadow-sm">
+                                        {attachedFile ? (
+                                            <View className="my-1.5 mr-1 flex-1 flex-row items-center justify-between rounded-2xl border border-zinc-200 bg-zinc-100 px-3 py-2">
+                                                <View className="mr-2 flex-1">
+                                                    <Text
+                                                        className="text-[13px] font-medium text-zinc-800"
+                                                        numberOfLines={1}
+                                                    >
+                                                        {attachedFile.name}
+                                                    </Text>
+                                                    <Text className="text-[10px] text-zinc-500">
+                                                        {attachedFile.size
+                                                            ? attachedFile.size / (1024 * 1024) >= 1
+                                                                ? `${(attachedFile.size / (1024 * 1024)).toFixed(2)} MB`
+                                                                : `${(attachedFile.size / 1024).toFixed(1)} KB`
+                                                            : ""}
+                                                    </Text>
+                                                </View>
+                                                <Pressable
+                                                    className="h-7 w-7 items-center justify-center rounded-full bg-zinc-200"
+                                                    onPress={() => setAttachedFile(null)}
+                                                >
+                                                    <X size={14} color="#71717a" />
+                                                </Pressable>
+                                            </View>
+                                        ) : (
+                                            <TextInput
+                                                className="max-h-32 flex-1 px-1 pb-3 pt-3 text-base text-zinc-900"
+                                                multiline
+                                                placeholder="Message"
+                                                placeholderTextColor="#a1a1aa"
+                                                value={message.message}
+                                                onChangeText={(text) =>
+                                                    setMessage((prev) => ({
+                                                        ...prev,
+                                                        message: text
+                                                    }))
+                                                }
+                                            />
+                                        )}
+                                    </View>
+                                    <Pressable
+                                        className={`ml-2 h-12 w-12 items-center justify-center rounded-full shadow-sm ${
+                                            message.message.trim() || attachedFile
+                                                ? "bg-amber-500"
+                                                : "bg-zinc-300"
+                                        }`}
+                                        onPress={handleSend}
+                                        disabled={
+                                            (!message.message.trim() && !attachedFile) || loading
+                                        }
+                                    >
+                                        <SendHorizontal
+                                            size={20}
+                                            color={
+                                                message.message.trim() || attachedFile
+                                                    ? "#451a03"
+                                                    : "#71717a"
+                                            }
+                                        />
+                                    </Pressable>
+                                </View>
+                                {error && (
+                                    <Text className="mt-2 text-center text-xs text-rose-500">
+                                        {error}
+                                    </Text>
+                                )}
+                            </View>
+                        </View>
+                    </KeyboardAvoidingView>
+                </Animated.View>
+
+                {/* Group Details Overlay */}
+                <Animated.View
+                    style={[
+                        groupInfoStyle,
+                        {
+                            position: "absolute",
+                            width: "100%",
+                            height: "100%",
+                            backgroundColor: "#f4f4f5",
+                            zIndex: 20
+                        }
+                    ]}
+                >
+                    <View className="flex-row items-center bg-slate-900 px-2 pb-4 pt-12 shadow-md">
+                        <Pressable className="p-2" onPress={() => setGroupDetails(null)}>
                             <ChevronLeft size={28} color="#f4f4f5" />
                         </Pressable>
-                        <Pressable
-                            className="flex-1 flex-row items-center"
-                            onPress={() => fetchGroupDetails(chosenService!.serviceId)}
-                            disabled={loadingDetails}
-                        >
-                            <View className="mr-3 h-10 w-10 items-center justify-center rounded-full bg-amber-500">
-                                <Text className="text-lg font-bold text-slate-900">
+                        <Text className="ml-2 text-xl font-bold text-zinc-50">Group Info</Text>
+                    </View>
+
+                    <ScrollView className="flex-1">
+                        <View className="mb-2 items-center border-b border-zinc-200 bg-white py-8 shadow-sm">
+                            <View className="mb-4 h-24 w-24 items-center justify-center rounded-full bg-amber-100">
+                                <Text className="text-4xl font-bold text-amber-700">
                                     {chosenService?.serviceName.substring(0, 1).toUpperCase()}
                                 </Text>
                             </View>
-                            <View className="flex-1">
-                                <Text
-                                    className="text-lg font-bold leading-tight text-zinc-50"
-                                    numberOfLines={1}
-                                >
-                                    {chosenService?.serviceName}
-                                </Text>
-                                <Text className="text-xs text-zinc-400">
-                                    {chosenService
-                                        ? `${format(new Date(chosenService.date), "d MMM yyyy")} • ${chosenService.time}`
-                                        : ""}
-                                </Text>
-                            </View>
-                        </Pressable>
-                    </View>
-
-                    {/* Chat Area */}
-                    <View className="flex-1 bg-[#efeae2]">
-                        <ScrollView
-                            ref={scrollViewRef}
-                            className="flex-1 px-3 pt-4"
-                            contentContainerClassName="pb-6"
-                            onContentSizeChange={() =>
-                                scrollViewRef.current?.scrollToEnd({ animated: true })
-                            }
-                        >
-                            {chats?.map((c, index) => {
-                                const currentDate = new Date(c.createdAt)
-                                const prevDate =
-                                    index > 0 ? new Date(chats[index - 1].createdAt) : null
-                                const showDateSeparator =
-                                    !prevDate ||
-                                    currentDate.toDateString() !== prevDate.toDateString()
-
-                                return (
-                                    <View
-                                        key={c.id}
-                                        onLayout={(e) => {
-                                            messageLayouts.current[c.id] = e.nativeEvent.layout.y
-                                        }}
-                                    >
-                                        {showDateSeparator && (
-                                            <View className="my-3 items-center">
-                                                <View className="rounded-lg bg-white/80 px-3 py-1 shadow-sm">
-                                                    <Text className="text-xs font-medium uppercase text-zinc-500">
-                                                        {format(currentDate, "EEE, d MMMM")}
-                                                    </Text>
-                                                </View>
-                                            </View>
-                                        )}
-                                        <ChatBubble
-                                            chat={c}
-                                            isMine={c.userId === userId.id}
-                                            members={members}
-                                            onReply={(chat) =>
-                                                setMessage((prev) => ({
-                                                    ...prev,
-                                                    replyTo: {
-                                                        chatId: chat.id,
-                                                        userId: chat.userId,
-                                                        userName: chat.userName,
-                                                        message: chat.message
-                                                    }
-                                                }))
-                                            }
-                                            onReadStatus={(chat) => setReadStatusChat(chat)}
-                                            scrollToMessage={scrollToMessage}
-                                        />
-                                    </View>
-                                )
-                            })}
-                        </ScrollView>
-
-                        {/* Input Area */}
-                        <View className="border-t border-zinc-200 bg-zinc-50 px-2 py-2">
-                            {message.replyTo && (
-                                <View className="mx-2 mt-1 flex-row items-start justify-between rounded-t-2xl border-l-4 border-rose-500 bg-zinc-100 p-3">
-                                    <View className="flex-1">
-                                        <Text className="mb-1 text-sm font-bold text-rose-500">
-                                            {message.replyTo.userName}
-                                        </Text>
-                                        <Text className="text-sm text-zinc-600" numberOfLines={2}>
-                                            {message.replyTo.message}
-                                        </Text>
-                                    </View>
-                                    <Pressable
-                                        onPress={() =>
-                                            setMessage((prev) => ({ ...prev, replyTo: null }))
-                                        }
-                                        className="p-1"
-                                    >
-                                        <X size={18} color="#a1a1aa" />
-                                    </Pressable>
-                                </View>
-                            )}
-
-                            <View
-                                className={`flex-row items-end px-2 ${message.replyTo ? "pb-2" : ""}`}
-                            >
-                                <Pressable
-                                    className="mr-1 h-12 w-10 items-center justify-center"
-                                    onPress={handleAttachment}
-                                >
-                                    <Paperclip size={22} color="#71717a" />
-                                </Pressable>
-                                <View className="min-h-[48px] flex-1 flex-row items-end rounded-3xl border border-zinc-200 bg-white px-2 shadow-sm">
-                                    {attachedFile ? (
-                                        <View className="my-1.5 mr-1 flex-1 flex-row items-center justify-between rounded-2xl border border-zinc-200 bg-zinc-100 px-3 py-2">
-                                            <View className="mr-2 flex-1">
-                                                <Text
-                                                    className="text-[13px] font-medium text-zinc-800"
-                                                    numberOfLines={1}
-                                                >
-                                                    {attachedFile.name}
-                                                </Text>
-                                                <Text className="text-[10px] text-zinc-500">
-                                                    {attachedFile.size
-                                                        ? attachedFile.size / (1024 * 1024) >= 1
-                                                            ? `${(attachedFile.size / (1024 * 1024)).toFixed(2)} MB`
-                                                            : `${(attachedFile.size / 1024).toFixed(1)} KB`
-                                                        : ""}
-                                                </Text>
-                                            </View>
-                                            <Pressable
-                                                className="h-7 w-7 items-center justify-center rounded-full bg-zinc-200"
-                                                onPress={() => setAttachedFile(null)}
-                                            >
-                                                <X size={14} color="#71717a" />
-                                            </Pressable>
-                                        </View>
-                                    ) : (
-                                        <TextInput
-                                            className="max-h-32 flex-1 px-1 pb-3 pt-3 text-base text-zinc-900"
-                                            multiline
-                                            placeholder="Message"
-                                            placeholderTextColor="#a1a1aa"
-                                            value={message.message}
-                                            onChangeText={(text) =>
-                                                setMessage((prev) => ({ ...prev, message: text }))
-                                            }
-                                        />
-                                    )}
-                                </View>
-                                <Pressable
-                                    className={`ml-2 h-12 w-12 items-center justify-center rounded-full shadow-sm ${
-                                        message.message.trim() || attachedFile
-                                            ? "bg-amber-500"
-                                            : "bg-zinc-300"
-                                    }`}
-                                    onPress={handleSend}
-                                    disabled={(!message.message.trim() && !attachedFile) || loading}
-                                >
-                                    <SendHorizontal
-                                        size={20}
-                                        color={
-                                            message.message.trim() || attachedFile
-                                                ? "#451a03"
-                                                : "#71717a"
-                                        }
-                                    />
-                                </Pressable>
-                            </View>
-                            {error && (
-                                <Text className="mt-2 text-center text-xs text-rose-500">
-                                    {error}
-                                </Text>
-                            )}
-                        </View>
-                    </View>
-                </KeyboardAvoidingView>
-            </Animated.View>
-
-            {/* Group Details Overlay */}
-            <Animated.View
-                style={[
-                    groupInfoStyle,
-                    {
-                        position: "absolute",
-                        width: "100%",
-                        height: "100%",
-                        backgroundColor: "#f4f4f5",
-                        zIndex: 20
-                    }
-                ]}
-            >
-                <View className="flex-row items-center bg-slate-900 px-2 pb-4 pt-12 shadow-md">
-                    <Pressable className="p-2" onPress={() => setGroupDetails(null)}>
-                        <ChevronLeft size={28} color="#f4f4f5" />
-                    </Pressable>
-                    <Text className="ml-2 text-xl font-bold text-zinc-50">Group Info</Text>
-                </View>
-
-                <ScrollView className="flex-1">
-                    <View className="mb-2 items-center border-b border-zinc-200 bg-white py-8 shadow-sm">
-                        <View className="mb-4 h-24 w-24 items-center justify-center rounded-full bg-amber-100">
-                            <Text className="text-4xl font-bold text-amber-700">
-                                {chosenService?.serviceName.substring(0, 1).toUpperCase()}
+                            <Text className="mb-1 text-2xl font-bold text-zinc-900">
+                                {chosenService?.serviceName}
+                            </Text>
+                            <Text className="mb-1 text-base font-medium text-zinc-500">
+                                {chosenService
+                                    ? `${format(new Date(chosenService.date), "EEEE, dd MMMM yyyy")} • ${chosenService.time}`
+                                    : ""}
+                            </Text>
+                            <Text className="text-sm text-zinc-400">
+                                Group • {groupDetails?.length || 0} members
                             </Text>
                         </View>
-                        <Text className="mb-1 text-2xl font-bold text-zinc-900">
-                            {chosenService?.serviceName}
-                        </Text>
-                        <Text className="mb-1 text-base font-medium text-zinc-500">
-                            {chosenService
-                                ? `${format(new Date(chosenService.date), "EEEE, dd MMMM yyyy")} • ${chosenService.time}`
-                                : ""}
-                        </Text>
-                        <Text className="text-sm text-zinc-400">
-                            Group • {groupDetails?.length || 0} members
-                        </Text>
-                    </View>
 
-                    <View className="border-y border-zinc-200 bg-white py-2 shadow-sm">
-                        <Text className="px-5 py-3 text-sm font-bold uppercase tracking-wider text-amber-600">
-                            Members
-                        </Text>
-                        {groupDetails?.map((g, index) => (
-                            <View
-                                key={g.userId}
-                                className={`flex-row items-center justify-between px-5 py-3 ${index < groupDetails.length - 1 ? "border-b border-zinc-100" : ""}`}
-                            >
-                                <View className="flex-1 flex-row items-center pr-4">
-                                    <View className="mr-4 h-12 w-12 items-center justify-center rounded-full bg-zinc-100">
-                                        <Text className="text-lg font-bold text-zinc-500">
-                                            {g.userName.substring(0, 1).toUpperCase()}
-                                        </Text>
-                                    </View>
-                                    <View className="flex-1">
-                                        <Text className="mb-0.5 text-base font-bold text-zinc-900">
-                                            {g.userName}
-                                        </Text>
-                                        <Text className="text-sm text-zinc-500">
-                                            {g.phoneNumber}
-                                        </Text>
-                                    </View>
-                                </View>
-                                <View className="items-end">
-                                    {g.roleName?.map((role, idx) => (
-                                        <View
-                                            key={idx}
-                                            className="mb-1 rounded-md border border-indigo-100 bg-indigo-50 px-2.5 py-1"
-                                        >
-                                            <Text className="text-[10px] font-bold uppercase text-indigo-600">
-                                                {role}
-                                            </Text>
-                                        </View>
-                                    ))}
-                                </View>
-                            </View>
-                        ))}
-                    </View>
-                </ScrollView>
-            </Animated.View>
-
-            {/* Read Status Overlay */}
-            <Animated.View
-                style={[
-                    readStatusStyle,
-                    {
-                        position: "absolute",
-                        width: "100%",
-                        height: "100%",
-                        backgroundColor: "#f4f4f5",
-                        zIndex: 30
-                    }
-                ]}
-            >
-                <View className="flex-row items-center bg-slate-900 px-2 pb-4 pt-12 shadow-md">
-                    <Pressable className="p-2" onPress={() => setReadStatusChat(null)}>
-                        <ChevronLeft size={28} color="#f4f4f5" />
-                    </Pressable>
-                    <View className="ml-2">
-                        <Text className="text-xl font-bold text-zinc-50">Message Info</Text>
-                        <Text className="text-xs text-zinc-400">
-                            {readStatusChat
-                                ? format(new Date(readStatusChat.createdAt), "d MMMM yyyy, HH:mm")
-                                : ""}
-                        </Text>
-                    </View>
-                </View>
-
-                <ScrollView className="flex-1">
-                    {/* Message Preview */}
-                    {readStatusChat && (
-                        <View className="items-end border-b border-zinc-200 bg-white p-4 shadow-sm">
-                            <View className="relative max-w-[80%] rounded-2xl rounded-tr-sm bg-[#dcf8c6] px-3 pb-2 pt-2 shadow-sm">
-                                {readStatusChat.file ? (
-                                    <Pressable
-                                        className="mt-1 rounded-lg bg-[#c5e6b1] p-3"
-                                        onPress={() => Linking.openURL(readStatusChat.file!.url)}
-                                    >
-                                        <Text className="font-medium text-zinc-900">
-                                            {readStatusChat.message || "Attached File"}
-                                        </Text>
-                                    </Pressable>
-                                ) : (
-                                    <Text className="text-[15px] leading-5 text-zinc-900">
-                                        {readStatusChat.message}
-                                        <Text className="text-[10px] text-transparent">
-                                            {
-                                                "\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0"
-                                            }
-                                        </Text>
-                                    </Text>
-                                )}
+                        <View className="border-y border-zinc-200 bg-white py-2 shadow-sm">
+                            <Text className="px-5 py-3 text-sm font-bold uppercase tracking-wider text-amber-600">
+                                Members
+                            </Text>
+                            {groupDetails?.map((g, index) => (
                                 <View
-                                    className={`flex-row items-center gap-1 ${readStatusChat.file ? "mt-1 self-end" : "absolute bottom-1.5 right-3"}`}
+                                    key={g.userId}
+                                    className={`flex-row items-center justify-between px-5 py-3 ${index < groupDetails.length - 1 ? "border-b border-zinc-100" : ""}`}
                                 >
-                                    <Text className="text-[10px] text-zinc-500">
-                                        {format(new Date(readStatusChat.createdAt), "HH:mm")}
-                                    </Text>
-                                    <CheckCheck
-                                        size={14}
-                                        color={
-                                            members &&
-                                            members.length > 1 &&
-                                            readStatusChat.readBy.filter(
-                                                (r) => r.userId !== readStatusChat.userId
-                                            ).length >=
-                                                members.length - 1
-                                                ? "#3b82f6"
-                                                : "#9ca3af"
-                                        }
-                                    />
+                                    <View className="flex-1 flex-row items-center pr-4">
+                                        <View className="mr-4 h-12 w-12 items-center justify-center rounded-full bg-zinc-100">
+                                            <Text className="text-lg font-bold text-zinc-500">
+                                                {g.userName.substring(0, 1).toUpperCase()}
+                                            </Text>
+                                        </View>
+                                        <View className="flex-1">
+                                            <Text className="mb-0.5 text-base font-bold text-zinc-900">
+                                                {g.userName}
+                                            </Text>
+                                            <Text className="text-sm text-zinc-500">
+                                                {g.phoneNumber}
+                                            </Text>
+                                        </View>
+                                    </View>
+                                    <View className="items-end">
+                                        {g.roleName?.map((role, idx) => (
+                                            <View
+                                                key={idx}
+                                                className="mb-1 rounded-md border border-indigo-100 bg-indigo-50 px-2.5 py-1"
+                                            >
+                                                <Text className="text-[10px] font-bold uppercase text-indigo-600">
+                                                    {role}
+                                                </Text>
+                                            </View>
+                                        ))}
+                                    </View>
                                 </View>
-                            </View>
+                            ))}
                         </View>
-                    )}
+                    </ScrollView>
+                </Animated.View>
 
-                    {/* Read By List */}
-                    {readStatusChat &&
-                        readStatusChat.readBy.filter((r) => r.userId !== userId.id).length > 0 && (
-                            <View className="mt-4 border-y border-zinc-200 bg-white py-2 shadow-sm">
-                                <View className="flex-row items-center gap-2 px-5 py-3">
-                                    <CheckCheck size={18} color="#3b82f6" />
-                                    <Text className="text-sm font-bold uppercase tracking-wider text-blue-500">
-                                        Read By
-                                    </Text>
-                                </View>
-                                {readStatusChat.readBy
-                                    .filter((r) => r.userId !== userId.id)
-                                    .map((r, index, arr) => (
-                                        <View
-                                            key={r.userId}
-                                            className={`flex-row items-center justify-between px-5 py-3 ${index < arr.length - 1 ? "border-b border-zinc-100" : ""}`}
+                {/* Read Status Overlay */}
+                <Animated.View
+                    style={[
+                        readStatusStyle,
+                        {
+                            position: "absolute",
+                            width: "100%",
+                            height: "100%",
+                            backgroundColor: "#f4f4f5",
+                            zIndex: 30
+                        }
+                    ]}
+                >
+                    <View className="flex-row items-center bg-slate-900 px-2 pb-4 pt-12 shadow-md">
+                        <Pressable className="p-2" onPress={() => setReadStatusChat(null)}>
+                            <ChevronLeft size={28} color="#f4f4f5" />
+                        </Pressable>
+                        <View className="ml-2">
+                            <Text className="text-xl font-bold text-zinc-50">Message Info</Text>
+                            <Text className="text-xs text-zinc-400">
+                                {readStatusChat
+                                    ? format(
+                                          new Date(readStatusChat.createdAt),
+                                          "d MMMM yyyy, HH:mm"
+                                      )
+                                    : ""}
+                            </Text>
+                        </View>
+                    </View>
+
+                    <ScrollView className="flex-1">
+                        {/* Message Preview */}
+                        {readStatusChat && (
+                            <View className="items-end border-b border-zinc-200 bg-white p-4 shadow-sm">
+                                <View className="relative max-w-[80%] rounded-2xl rounded-tr-sm bg-[#dcf8c6] px-3 pb-2 pt-2 shadow-sm">
+                                    {readStatusChat.file ? (
+                                        <Pressable
+                                            className="mt-1 rounded-lg bg-[#c5e6b1] p-3"
+                                            onPress={() =>
+                                                Linking.openURL(readStatusChat.file!.url)
+                                            }
                                         >
-                                            <Text className="text-base font-bold text-zinc-900">
-                                                {r.userName}
+                                            <Text className="font-medium text-zinc-900">
+                                                {readStatusChat.message || "Attached File"}
                                             </Text>
-                                            <Text className="text-sm font-medium text-blue-500">
-                                                Read
+                                        </Pressable>
+                                    ) : (
+                                        <Text className="text-[15px] leading-5 text-zinc-900">
+                                            {readStatusChat.message}
+                                            <Text className="text-[10px] text-transparent">
+                                                {
+                                                    "\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0"
+                                                }
                                             </Text>
-                                        </View>
-                                    ))}
+                                        </Text>
+                                    )}
+                                    <View
+                                        className={`flex-row items-center gap-1 ${readStatusChat.file ? "mt-1 self-end" : "absolute bottom-1.5 right-3"}`}
+                                    >
+                                        <Text className="text-[10px] text-zinc-500">
+                                            {format(new Date(readStatusChat.createdAt), "HH:mm")}
+                                        </Text>
+                                        <CheckCheck
+                                            size={14}
+                                            color={
+                                                members &&
+                                                members.length > 1 &&
+                                                readStatusChat.readBy.filter(
+                                                    (r) => r.userId !== readStatusChat.userId
+                                                ).length >=
+                                                    members.length - 1
+                                                    ? "#3b82f6"
+                                                    : "#9ca3af"
+                                            }
+                                        />
+                                    </View>
+                                </View>
                             </View>
                         )}
 
-                    {/* Unread By List */}
-                    {readStatusChat &&
-                        members &&
-                        members.filter(
-                            (m) =>
-                                m.userId !== userId.id &&
-                                !readStatusChat.readBy.some((r) => r.userId === m.userId)
-                        ).length > 0 && (
-                            <View className="mb-10 mt-4 border-y border-zinc-200 bg-white py-2 shadow-sm">
-                                <View className="flex-row items-center gap-2 px-5 py-3">
-                                    <CheckCheck size={18} color="#9ca3af" />
-                                    <Text className="text-sm font-bold uppercase tracking-wider text-zinc-500">
-                                        Remaining
-                                    </Text>
+                        {/* Read By List */}
+                        {readStatusChat &&
+                            readStatusChat.readBy.filter((r) => r.userId !== userId.id).length >
+                                0 && (
+                                <View className="mt-4 border-y border-zinc-200 bg-white py-2 shadow-sm">
+                                    <View className="flex-row items-center gap-2 px-5 py-3">
+                                        <CheckCheck size={18} color="#3b82f6" />
+                                        <Text className="text-sm font-bold uppercase tracking-wider text-blue-500">
+                                            Read By
+                                        </Text>
+                                    </View>
+                                    {readStatusChat.readBy
+                                        .filter((r) => r.userId !== userId.id)
+                                        .map((r, index, arr) => (
+                                            <View
+                                                key={r.userId}
+                                                className={`flex-row items-center justify-between px-5 py-3 ${index < arr.length - 1 ? "border-b border-zinc-100" : ""}`}
+                                            >
+                                                <Text className="text-base font-bold text-zinc-900">
+                                                    {r.userName}
+                                                </Text>
+                                                <Text className="text-sm font-medium text-blue-500">
+                                                    Read
+                                                </Text>
+                                            </View>
+                                        ))}
                                 </View>
-                                {members
-                                    .filter(
-                                        (m) =>
-                                            m.userId !== userId.id &&
-                                            !readStatusChat.readBy.some(
-                                                (r) => r.userId === m.userId
-                                            )
-                                    )
-                                    .map((m, index, arr) => (
-                                        <View
-                                            key={m.userId}
-                                            className={`flex-row items-center justify-between px-5 py-3 ${index < arr.length - 1 ? "border-b border-zinc-100" : ""}`}
-                                        >
-                                            <Text className="text-base font-bold text-zinc-900">
-                                                {m.userName}
-                                            </Text>
-                                            <Text className="text-sm font-medium text-zinc-400">
-                                                Delivered
-                                            </Text>
-                                        </View>
-                                    ))}
-                            </View>
-                        )}
-                </ScrollView>
-            </Animated.View>
-        </GestureHandlerRootView>
+                            )}
+
+                        {/* Unread By List */}
+                        {readStatusChat &&
+                            members &&
+                            members.filter(
+                                (m) =>
+                                    m.userId !== userId.id &&
+                                    !readStatusChat.readBy.some((r) => r.userId === m.userId)
+                            ).length > 0 && (
+                                <View className="mb-10 mt-4 border-y border-zinc-200 bg-white py-2 shadow-sm">
+                                    <View className="flex-row items-center gap-2 px-5 py-3">
+                                        <CheckCheck size={18} color="#9ca3af" />
+                                        <Text className="text-sm font-bold uppercase tracking-wider text-zinc-500">
+                                            Remaining
+                                        </Text>
+                                    </View>
+                                    {members
+                                        .filter(
+                                            (m) =>
+                                                m.userId !== userId.id &&
+                                                !readStatusChat.readBy.some(
+                                                    (r) => r.userId === m.userId
+                                                )
+                                        )
+                                        .map((m, index, arr) => (
+                                            <View
+                                                key={m.userId}
+                                                className={`flex-row items-center justify-between px-5 py-3 ${index < arr.length - 1 ? "border-b border-zinc-100" : ""}`}
+                                            >
+                                                <Text className="text-base font-bold text-zinc-900">
+                                                    {m.userName}
+                                                </Text>
+                                                <Text className="text-sm font-medium text-zinc-400">
+                                                    Delivered
+                                                </Text>
+                                            </View>
+                                        ))}
+                                </View>
+                            )}
+                    </ScrollView>
+                </Animated.View>
+            </GestureHandlerRootView>
+        </SafeAreaView>
     )
 }

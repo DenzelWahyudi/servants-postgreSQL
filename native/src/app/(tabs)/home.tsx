@@ -5,6 +5,7 @@ import { useAuth } from "@/hooks/useAuth"
 import { startOfToday, isEqual, startOfDay, format } from "date-fns"
 import { API_URL } from "../../../api"
 import { Ionicons } from "@expo/vector-icons"
+import { SafeAreaView } from "react-native-safe-area-context"
 
 type StatsCardProps = {
     icon: keyof typeof Ionicons.glyphMap
@@ -126,143 +127,150 @@ export default function HomeTab() {
     }
 
     return (
-        <ScrollView className="flex-1 bg-zinc-50 pt-3" contentContainerClassName="pb-10">
-            <View className="flex-row items-center justify-between px-6 pb-6 pt-10">
-                <View>
-                    <Text className="text-3xl font-bold text-zinc-900">
-                        Hello, <Text className="text-amber-500">{userName ?? "..."}</Text>
-                    </Text>
-                    <Text className="mt-1 text-base font-medium text-zinc-500">
-                        Here is what's happening today
-                    </Text>
+        <SafeAreaView className="flex-1 bg-zinc-50">
+            <ScrollView className="flex-1" contentContainerClassName="pb-10">
+                <View className="flex-row items-center justify-between px-6 pb-6 pt-10">
+                    <View>
+                        <Text className="text-3xl font-bold text-zinc-900">
+                            Hello, <Text className="text-amber-500">{userName ?? "..."}</Text>
+                        </Text>
+                        <Text className="mt-1 text-base font-medium text-zinc-500">
+                            Here is what's happening today
+                        </Text>
+                    </View>
+                    <Pressable
+                        onPress={async () => {
+                            await logout()
+                            router.push("/login")
+                        }}
+                        className="rounded-full bg-zinc-200/50 p-2"
+                        style={({ pressed }) => ({ opacity: pressed ? 0.7 : 1 })}
+                    >
+                        <Ionicons name="log-out-outline" size={24} color="#71717a" />
+                    </Pressable>
                 </View>
-                <Pressable
-                    onPress={async () => {
-                        await logout()
-                        router.push("/login")
-                    }}
-                    className="rounded-full bg-zinc-200/50 p-2"
-                    style={({ pressed }) => ({ opacity: pressed ? 0.7 : 1 })}
+
+                <ScrollView
+                    horizontal
+                    showsHorizontalScrollIndicator={false}
+                    contentContainerClassName="px-6 pb-6 gap-4"
                 >
-                    <Ionicons name="log-out-outline" size={24} color="#71717a" />
-                </Pressable>
-            </View>
+                    <StatsCard
+                        linkTo="/schedule"
+                        icon="notifications"
+                        title={`${todayServiceCount} Service Reminders Today`}
+                        buttonLabel="View Schedule"
+                    />
+                    <StatsCard
+                        onClick={getAssignments}
+                        icon="person"
+                        title="Pending Sign-ups"
+                        buttonLabel={loading ? "Loading..." : "Review Now"}
+                        onDisabled={loading}
+                    />
+                    <StatsCard
+                        linkTo="/openings"
+                        icon="calendar"
+                        title={`Open Recruitment: ${openRoles ?? 0}`}
+                        buttonLabel="Fill Remaining Roles"
+                    />
+                </ScrollView>
 
-            <ScrollView
-                horizontal
-                showsHorizontalScrollIndicator={false}
-                contentContainerClassName="px-6 pb-6 gap-4"
-            >
-                <StatsCard
-                    linkTo="/schedule"
-                    icon="notifications"
-                    title={`${todayServiceCount} Service Reminders Today`}
-                    buttonLabel="View Schedule"
-                />
-                <StatsCard
-                    onClick={getAssignments}
-                    icon="person"
-                    title="Pending Sign-ups"
-                    buttonLabel={loading ? "Loading..." : "Review Now"}
-                    onDisabled={loading}
-                />
-                <StatsCard
-                    linkTo="/openings"
-                    icon="calendar"
-                    title={`Open Recruitment: ${openRoles ?? 0}`}
-                    buttonLabel="Fill Remaining Roles"
-                />
-            </ScrollView>
+                <View className="mt-2 min-h-[500px] flex-1 rounded-t-3xl bg-white px-6 pt-8 shadow-sm">
+                    <UpcomingServicesMobile />
+                </View>
 
-            <View className="mt-2 min-h-[500px] flex-1 rounded-t-3xl bg-white px-6 pt-8 shadow-sm">
-                <UpcomingServicesMobile />
-            </View>
-
-            <Modal
-                visible={!!assignments}
-                transparent
-                animationType="fade"
-                onRequestClose={() => setAssignments(null)}
-            >
-                <View className="flex-1 items-center justify-center bg-black/60 px-4 pb-12 pt-12">
-                    <Pressable className="absolute inset-0" onPress={() => setAssignments(null)} />
-                    <View className="relative z-10 max-h-full w-full overflow-hidden rounded-3xl border border-slate-800 bg-slate-900 shadow-2xl">
-                        <View className="flex-row items-center justify-between border-b border-slate-800 bg-slate-900/90 px-6 py-5">
-                            <Text className="text-xl font-bold text-zinc-50">
-                                Pending Assignments
-                            </Text>
-                            <Pressable
-                                onPress={() => setAssignments(null)}
-                                className="-mr-2 p-2"
-                                style={({ pressed }) => ({ opacity: pressed ? 0.7 : 1 })}
-                            >
-                                <Text className="text-lg font-bold text-zinc-400">✕</Text>
-                            </Pressable>
-                        </View>
-
-                        <ScrollView className="p-4" contentContainerClassName="gap-4 pb-8">
-                            {assignments?.map((a) => (
-                                <View
-                                    key={a.id}
-                                    className="rounded-2xl border border-slate-700 bg-slate-800 p-5"
+                <Modal
+                    visible={!!assignments}
+                    transparent
+                    animationType="fade"
+                    onRequestClose={() => setAssignments(null)}
+                >
+                    <View className="flex-1 items-center justify-center bg-black/60 px-4 pb-12 pt-12">
+                        <Pressable
+                            className="absolute inset-0"
+                            onPress={() => setAssignments(null)}
+                        />
+                        <View className="relative z-10 max-h-full w-full overflow-hidden rounded-3xl border border-slate-800 bg-slate-900 shadow-2xl">
+                            <View className="flex-row items-center justify-between border-b border-slate-800 bg-slate-900/90 px-6 py-5">
+                                <Text className="text-xl font-bold text-zinc-50">
+                                    Pending Assignments
+                                </Text>
+                                <Pressable
+                                    onPress={() => setAssignments(null)}
+                                    className="-mr-2 p-2"
+                                    style={({ pressed }) => ({ opacity: pressed ? 0.7 : 1 })}
                                 >
-                                    <View className="mb-3 flex-row items-start justify-between">
-                                        <Text className="mr-3 flex-1 text-lg font-bold leading-tight text-zinc-50">
-                                            {a.serviceName}
-                                        </Text>
-                                        <View
-                                            className={`rounded-lg px-3 py-1.5 ${
-                                                a.status === "confirmed"
-                                                    ? "bg-emerald-500/20"
-                                                    : a.status === "pending"
-                                                      ? "bg-amber-500/20"
-                                                      : "bg-rose-500/20"
-                                            }`}
-                                        >
-                                            <Text
-                                                className={`text-xs font-bold uppercase tracking-wider ${
+                                    <Text className="text-lg font-bold text-zinc-400">✕</Text>
+                                </Pressable>
+                            </View>
+
+                            <ScrollView className="p-4" contentContainerClassName="gap-4 pb-8">
+                                {assignments?.map((a) => (
+                                    <View
+                                        key={a.id}
+                                        className="rounded-2xl border border-slate-700 bg-slate-800 p-5"
+                                    >
+                                        <View className="mb-3 flex-row items-start justify-between">
+                                            <Text className="mr-3 flex-1 text-lg font-bold leading-tight text-zinc-50">
+                                                {a.serviceName}
+                                            </Text>
+                                            <View
+                                                className={`rounded-lg px-3 py-1.5 ${
                                                     a.status === "confirmed"
-                                                        ? "text-emerald-400"
+                                                        ? "bg-emerald-500/20"
                                                         : a.status === "pending"
-                                                          ? "text-amber-400"
-                                                          : "text-rose-400"
+                                                          ? "bg-amber-500/20"
+                                                          : "bg-rose-500/20"
                                                 }`}
                                             >
-                                                {a.status}
+                                                <Text
+                                                    className={`text-xs font-bold uppercase tracking-wider ${
+                                                        a.status === "confirmed"
+                                                            ? "text-emerald-400"
+                                                            : a.status === "pending"
+                                                              ? "text-amber-400"
+                                                              : "text-rose-400"
+                                                    }`}
+                                                >
+                                                    {a.status}
+                                                </Text>
+                                            </View>
+                                        </View>
+
+                                        <View className="mb-4 flex-row items-center">
+                                            <Text className="font-medium text-zinc-400">
+                                                {format(new Date(a.date), "d MMM yyyy")}
+                                            </Text>
+                                            <Text className="mx-3 text-zinc-600">•</Text>
+                                            <Text className="font-medium text-zinc-400">
+                                                {a.time}
+                                            </Text>
+                                        </View>
+
+                                        <View className="rounded-xl border border-slate-700/50 bg-slate-900/50 p-3.5">
+                                            <Text className="mb-1 text-[11px] font-bold uppercase tracking-wider text-zinc-500">
+                                                Role Assigned
+                                            </Text>
+                                            <Text className="font-semibold text-zinc-200">
+                                                {a.roleName}
                                             </Text>
                                         </View>
                                     </View>
-
-                                    <View className="mb-4 flex-row items-center">
-                                        <Text className="font-medium text-zinc-400">
-                                            {format(new Date(a.date), "d MMM yyyy")}
-                                        </Text>
-                                        <Text className="mx-3 text-zinc-600">•</Text>
-                                        <Text className="font-medium text-zinc-400">{a.time}</Text>
-                                    </View>
-
-                                    <View className="rounded-xl border border-slate-700/50 bg-slate-900/50 p-3.5">
-                                        <Text className="mb-1 text-[11px] font-bold uppercase tracking-wider text-zinc-500">
-                                            Role Assigned
-                                        </Text>
-                                        <Text className="font-semibold text-zinc-200">
-                                            {a.roleName}
+                                ))}
+                                {assignments?.length === 0 && (
+                                    <View className="items-center justify-center py-12">
+                                        <Text className="text-lg font-medium text-zinc-500">
+                                            No pending assignments
                                         </Text>
                                     </View>
-                                </View>
-                            ))}
-                            {assignments?.length === 0 && (
-                                <View className="items-center justify-center py-12">
-                                    <Text className="text-lg font-medium text-zinc-500">
-                                        No pending assignments
-                                    </Text>
-                                </View>
-                            )}
-                        </ScrollView>
+                                )}
+                            </ScrollView>
+                        </View>
                     </View>
-                </View>
-            </Modal>
-        </ScrollView>
+                </Modal>
+            </ScrollView>
+        </SafeAreaView>
     )
 }
 
