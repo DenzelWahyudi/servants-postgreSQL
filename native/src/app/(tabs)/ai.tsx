@@ -60,9 +60,7 @@ export default function AiTab() {
                 className="flex-1"
                 keyboardVerticalOffset={Platform.OS === "ios" ? 90 : 0}
             >
-                <View className="border-b border-zinc-100 bg-white px-6 pb-4 pt-12">
-                    <Text className="text-xl font-bold text-zinc-900">Assistant</Text>
-                </View>
+                <View className="border-b border-zinc-100 pb-4" />
 
                 <ScrollView
                     className="flex-1"
@@ -93,10 +91,10 @@ export default function AiTab() {
                     ))}
                 </ScrollView>
 
-                <View className="border-t border-zinc-100 bg-white px-4 py-3 pb-6">
+                <View className="border-t border-zinc-100 bg-white px-4 pt-4">
                     <View className="flex-row items-end rounded-[24px] border border-zinc-200 bg-zinc-50 py-1.5 pl-4 pr-2">
                         <TextInput
-                            className="max-h-32 flex-1 pb-2 pt-2 text-base text-zinc-900"
+                            className="max-h-32 flex-1 py-2 text-base text-zinc-900"
                             placeholder="Message..."
                             placeholderTextColor="#a1a1aa"
                             multiline
