@@ -26,7 +26,7 @@ import Animated, {
 import { scheduleOnRN } from "react-native-worklets"
 import { GestureHandlerRootView, Gesture, GestureDetector } from "react-native-gesture-handler"
 import { File, UploadType } from "expo-file-system"
-import { SafeAreaView } from "react-native-safe-area-context"
+import { SafeAreaView, useSafeAreaInsets } from "react-native-safe-area-context"
 
 // Interfaces
 interface Service {
@@ -203,6 +203,7 @@ function ChatBubble({
 }
 
 export default function ChatsTab() {
+    const insets = useSafeAreaInsets()
     const { token } = useAuth()
     const [assignedServices, setAssignedServices] = useState<Service[] | null>([])
     const [chosenService, setChosenService] = useState<Service | null>(null)
@@ -444,7 +445,10 @@ export default function ChatsTab() {
         ) || []
 
     return (
-        <SafeAreaView className={`flex-1 ${chosenService || groupDetails || readStatusChat ? "bg-slate-900" : "bg-zinc-50"}`}>
+        <SafeAreaView
+            className={`flex-1 ${chosenService || groupDetails || readStatusChat ? "bg-slate-900" : "bg-zinc-50"}`}
+            edges={["top"]}
+        >
             <GestureHandlerRootView className="flex-1">
                 {/* Main Chat List Screen */}
                 <View className="flex-1">
@@ -538,7 +542,11 @@ export default function ChatsTab() {
                         }
                     ]}
                 >
-                    <KeyboardAvoidingView behavior="padding" className="flex-1">
+                    <KeyboardAvoidingView
+                        behavior="padding"
+                        keyboardVerticalOffset={insets.top}
+                        className="flex-1"
+                    >
                         {/* Header */}
                         <View className="z-10 flex-row items-center bg-slate-900 px-2 pb-4 shadow-md">
                             <Pressable
