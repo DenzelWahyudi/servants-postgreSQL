@@ -37,9 +37,13 @@ async function sendChat(req, res, next) {
         try {
             const groupMembers = await getGroupDetails(serviceId);
             const tokens = groupMembers
-                .filter(member => member.userId.toString() !== userId.toString() && member.pushToken)
-                .map(member => member.pushToken);
-            
+                .filter(
+                    (member) =>
+                        member.userId.toString() !== userId.toString() &&
+                        member.pushToken
+                )
+                .map((member) => member.pushToken);
+
             if (tokens.length > 0) {
                 await sendPushNotifications(
                     tokens,

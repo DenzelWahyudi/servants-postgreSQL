@@ -7,18 +7,14 @@ type ButtonLinkProps = {
     variant?: Variant
 } & LinkProps
 
-export function ButtonLink({
-    variant = "primary",
-    className,
-    ...props
-}: ButtonLinkProps){
+export function ButtonLink({ variant = "primary", className, ...props }: ButtonLinkProps) {
     return (
         <Link
             {...props}
             className={twMerge(
-                "transition-colors rounded-lg px-2 py-1 disabled:opacity-30 disabled:cursor-not-allowed",
+                "rounded-lg px-2 py-1 transition-colors disabled:cursor-not-allowed disabled:opacity-30",
                 getVariantStyles(variant),
-                className,
+                className
             )}
         />
     )

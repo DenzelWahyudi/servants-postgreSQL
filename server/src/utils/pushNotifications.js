@@ -5,7 +5,9 @@ async function sendPushNotifications(tokens, title, body, data = {}) {
     let messages = [];
     for (let pushToken of tokens) {
         if (!Expo.isExpoPushToken(pushToken)) {
-            console.error(`Push token ${pushToken} is not a valid Expo push token`);
+            console.error(
+                `Push token ${pushToken} is not a valid Expo push token`
+            );
             continue;
         }
 
@@ -20,7 +22,7 @@ async function sendPushNotifications(tokens, title, body, data = {}) {
 
     let chunks = expo.chunkPushNotifications(messages);
     let tickets = [];
-    
+
     for (let chunk of chunks) {
         try {
             let ticketChunk = await expo.sendPushNotificationsAsync(chunk);
