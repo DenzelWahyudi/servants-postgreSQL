@@ -444,7 +444,7 @@ export default function ChatsTab() {
         ) || []
 
     return (
-        <SafeAreaView className="flex-1 bg-zinc-50">
+        <SafeAreaView className={`flex-1 ${chosenService || groupDetails || readStatusChat ? "bg-slate-900" : "bg-zinc-50"}`}>
             <GestureHandlerRootView className="flex-1">
                 {/* Main Chat List Screen */}
                 <View className="flex-1">
@@ -540,7 +540,7 @@ export default function ChatsTab() {
                 >
                     <KeyboardAvoidingView behavior="padding" className="flex-1">
                         {/* Header */}
-                        <View className="z-10 flex-row items-center bg-slate-900 px-2 pb-4 pt-12 shadow-md">
+                        <View className="z-10 flex-row items-center bg-slate-900 px-2 pb-4 shadow-md">
                             <Pressable
                                 className="mr-1 p-2"
                                 onPress={() => {
@@ -754,7 +754,7 @@ export default function ChatsTab() {
                         }
                     ]}
                 >
-                    <View className="flex-row items-center bg-slate-900 px-2 pb-4 pt-12 shadow-md">
+                    <View className="flex-row items-center bg-slate-900 px-2 pb-4 shadow-md">
                         <Pressable className="p-2" onPress={() => setGroupDetails(null)}>
                             <ChevronLeft size={28} color="#f4f4f5" />
                         </Pressable>
@@ -836,7 +836,7 @@ export default function ChatsTab() {
                         }
                     ]}
                 >
-                    <View className="flex-row items-center bg-slate-900 px-2 pb-4 pt-12 shadow-md">
+                    <View className="flex-row items-center bg-slate-900 px-2 pb-4 shadow-md">
                         <Pressable className="p-2" onPress={() => setReadStatusChat(null)}>
                             <ChevronLeft size={28} color="#f4f4f5" />
                         </Pressable>

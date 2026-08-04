@@ -1,6 +1,6 @@
-import { useEffect, useRef, useState } from 'react';
-import { API_URL } from '../api';
-import {useAuth} from "./useAuth.ts";
+import { useEffect, useRef, useState } from "react"
+import { API_URL } from "../api"
+import { useAuth } from "./useAuth.ts"
 
 interface Chat {
     id: string
@@ -22,52 +22,54 @@ interface ReplyTo {
 }
 
 interface ReadBy {
-    userId: string,
+    userId: string
     userName: string
 }
 
 interface UploadedFile {
-    id: string;
-    url: string;
-    publicId: string;
-    resourceType: string;
-    format?: string;
-    originalName?: string;
-    bytes?: number;
+    id: string
+    url: string
+    publicId: string
+    resourceType: string
+    format?: string
+    originalName?: string
+    bytes?: number
 }
 
 // Derives ws:// or wss:// from your existing API_URL automatically
-const WS_URL = API_URL.replace(/^http/, 'ws');
+const WS_URL = API_URL.replace(/^http/, "ws")
 
 export function useChatSocket(serviceId: string | undefined) {
-    const [chats, setChats] = useState<Chat[]>([]);
-    const wsRef = useRef<WebSocket | null>(null);
+    const [chats, setChats] = useState<Chat[]>([])
+    const wsRef = useRef<WebSocket | null>(null)
     const { token } = useAuth()
 
     useEffect(() => {
-        let cancelled = false;
+        let cancelled = false
 
-        if (!serviceId) return;
+        if (!serviceId) return
 
         // Initial load via REST
         fetch(`${API_URL}/api/chats/${serviceId}`, {
-            headers: { 'Content-Type': 'application/json' }
+            headers: { "Content-Type": "application/json" }
         })
-            .then(res => res.json())
-            .then((data: Chat[]) => {if (!cancelled) setChats(data)})
-            .catch(err => {
-                if (!cancelled) console.error('Failed to load chats:', err);
-            });
+            .then((res) => res.json())
+            .then((data: Chat[]) => {
+                if (!cancelled) setChats(data)
+            })
+            .catch((err) => {
+                if (!cancelled) console.error("Failed to load chats:", err)
+            })
 
         // Live updates via WebSocket
         function connect() {
-            const ws = new WebSocket(`${WS_URL}/ws/chats/${serviceId}`);
-            wsRef.current = ws;
+            const ws = new WebSocket(`${WS_URL}/ws/chats/${serviceId}`)
+            wsRef.current = ws
 
             ws.onmessage = (event) => {
-                const { type, data } = JSON.parse(event.data);
-                if (type === 'NEW_CHAT') {
-                    setChats(prev => [...prev, data]);
+                const { type, data } = JSON.parse(event.data)
+                if (type === "NEW_CHAT") {
+                    setChats((prev) => [...prev, data])
                     void fetch(`${API_URL}/api/chats/read`, {
                         method: "POST",
                         headers: {
@@ -77,37 +79,40 @@ export function useChatSocket(serviceId: string | undefined) {
                         body: JSON.stringify({ serviceId, chatId: data.id })
                     })
                 }
-                if (type === 'NEW_READ') {
-                    setChats(prev => prev.map(chat =>
-                        chat.id === data.id ?  { ...chat, readBy: data.readBy } : chat
-                    ))
+                if (type === "NEW_READ") {
+                    setChats((prev) =>
+                        prev.map((chat) =>
+                            chat.id === data.id ? { ...chat, readBy: data.readBy } : chat
+                        )
+                    )
                 }
-                if (type === 'NEW_READS') {
+                if (type === "NEW_READS") {
                     setChats((prev) =>
                         prev.map((chat) => {
-                            const matchingChat = data.find((newChat: Chat) => newChat.id === chat.id)
-                            return matchingChat ? { ...chat, readBy: matchingChat.readBy }
-                                : chat
+                            const matchingChat = data.find(
+                                (newChat: Chat) => newChat.id === chat.id
+                            )
+                            return matchingChat ? { ...chat, readBy: matchingChat.readBy } : chat
                         })
                     )
                 }
-            };
+            }
 
-            ws.onerror = () => ws.close();
+            ws.onerror = () => ws.close()
 
             ws.onclose = () => {
-                if (!cancelled) setTimeout(connect, 3000); // ← only retry if still active
-            };
+                if (!cancelled) setTimeout(connect, 3000) // ← only retry if still active
+            }
         }
 
-        connect();
+        connect()
 
         return () => {
-            cancelled = true;
-            wsRef.current?.close();
-            wsRef.current = null;
-        };
-    }, [serviceId, token]);
+            cancelled = true
+            wsRef.current?.close()
+            wsRef.current = null
+        }
+    }, [serviceId, token])
 
-    return { chats };
+    return { chats }
 }

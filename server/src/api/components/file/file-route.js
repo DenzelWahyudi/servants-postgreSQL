@@ -7,4 +7,4 @@ module.exports = (app) => {
     app.use('/file', route);
 
     route.post('/upload', upload.single('file'), uploadFile);
-}
+};

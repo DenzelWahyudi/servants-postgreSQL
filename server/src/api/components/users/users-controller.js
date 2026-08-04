@@ -651,7 +651,9 @@ async function savePushToken(req, res, next) {
             );
         }
 
-        return res.status(200).json({ message: 'Push token saved successfully.' });
+        return res
+            .status(200)
+            .json({ message: 'Push token saved successfully.' });
     } catch (error) {
         next(error);
     }
