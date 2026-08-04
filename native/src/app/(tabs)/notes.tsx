@@ -117,8 +117,8 @@ export default function NotesPage() {
     }
 
     return (
-        <SafeAreaView className="flex-1 bg-zinc-900">
-            <View className="flex-1 -mb-6" style={{ backgroundColor: page }}>
+        <SafeAreaView className="flex-1 bg-zinc-900" edges={["top"]}>
+            <View className="flex-1" style={{ backgroundColor: page }}>
                 <View className="flex-row items-center justify-evenly bg-zinc-900 px-6 py-3">
                     {PAGE_COLORS.map((color) => {
                         const hasText = pagesWithText.has(color.page)
