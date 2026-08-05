@@ -129,7 +129,7 @@ export default function HomeTab() {
     return (
         <SafeAreaView className="flex-1 bg-zinc-50" edges={["top"]}>
             <ScrollView className="flex-1" contentContainerClassName="pb-10">
-                <View className="flex-row items-center justify-between px-6 pb-6 pt-10">
+                <View className="flex-row items-center justify-between px-6 pb-6">
                     <View>
                         <Text className="text-3xl font-bold text-zinc-900">
                             Hello, <Text className="text-amber-500">{userName ?? "..."}</Text>
