@@ -98,7 +98,7 @@ export default function ScheduleTab() {
     return (
         <SafeAreaView className="flex-1 bg-zinc-50">
             <ScrollView className="flex-1" contentContainerClassName="pb-10">
-                <View className="px-6 pb-6 pt-10">
+                <View className="px-6 pb-6">
                     <Text className="text-3xl font-bold text-zinc-900">My Schedule</Text>
                     <Text className="mt-1 text-base font-medium text-zinc-500">
                         Keep track of your serving dates
