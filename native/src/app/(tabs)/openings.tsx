@@ -122,7 +122,7 @@ export default function OpeningsTab() {
         }) || []
 
     return (
-        <SafeAreaView className="flex-1 bg-zinc-50">
+        <SafeAreaView className="flex-1 bg-zinc-50" edges={["top"]}>
             <View className="flex-1">
                 <ScrollView className="flex-1" contentContainerClassName="pb-10">
                     <View className="px-6 pb-6">
