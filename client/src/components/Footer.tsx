@@ -32,7 +32,7 @@ export function Footer() {
                 <h1 className="text-2xl font-bold">Servants</h1>
             </div>
 
-            <span className="text-sm text-zinc-400">© 2026 Sevants. All rights reserved.</span>
+            <span className="text-sm text-zinc-400">© 2026 Servants. All rights reserved.</span>
         </div>
     )
 }
