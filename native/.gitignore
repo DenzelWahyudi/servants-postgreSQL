@@ -8,6 +8,7 @@ node_modules/
 dist/
 web-build/
 expo-env.d.ts
+eas.json
 
 # Native
 .kotlin/
@@ -45,3 +46,6 @@ app-example
 
 # jetbrains defaults
 .idea
+
+# Firebase Cloud Messaging
+google-services.json
