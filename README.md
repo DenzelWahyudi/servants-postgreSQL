@@ -73,7 +73,7 @@ servants-postgresql/
 │   └── vite.config.ts
 ├── server/                       # Express Backend
 │   ├── src/
-│   │   ├── api/                  # API router and feature modules (CSR pattern)
+│   │   ├── api/                  # API router and feature modules (Controller → Service → Repository)
 │   │   ├── core/                 # Server config, middleware, error handling, logger
 │   │   ├── postgre/              # PostgreSQL connection & schema
 │   │   │   ├── database.sql      # Full database schema (tables & ENUMs)
@@ -160,15 +160,15 @@ servants-postgresql/
    ```bash
    cd ../client
    npm install
-   cp .env.example .env   # or create manually
-   # Set VITE_API_URL to your backend URL (e.g., http://localhost:5000/api)
+   cp .env.example .env
+   # Edit .env and set VITE_API_URL to your backend URL
    ```
 
 5. **Native App Setup**
    ```bash
    cd ../native
    npm install
-   cp .env.example .env   # or create manually
+   cp .env.example .env
    # Set EXPO_PUBLIC_API_URL to your backend URL
    ```
 
@@ -213,7 +213,13 @@ The REST API is exposed under `/api` and is organized into the following resourc
 | Chats | `/api/chats` | Chat message history |
 | File | `/api/file` | File upload to Cloudinary |
 
-Real-time messaging uses **WebSockets** on the same server instance.
+Real-time messaging uses **WebSockets** on the same server instance. The WebSocket endpoint follows this URL pattern:
+
+```
+ws://<host>/ws/chats/:serviceId
+```
+
+> **WebSocket Note:** The WebSocket URL is derived automatically from `VITE_API_URL` / `EXPO_PUBLIC_API_URL` by replacing `http` with `ws` (or `https` with `wss`). When deploying behind a reverse proxy (e.g., Render, Nginx), ensure WebSocket upgrade headers are forwarded correctly.
 
 ### Database Schema
 The backend uses **PostgreSQL** with the following tables and custom ENUM types:
@@ -255,6 +261,17 @@ The backend uses **PostgreSQL** with the following tables and custom ENUM types:
 | `/admin/admissions` | Manage Admissions | Admin only |
 | `/admin/users` | Manage Users | Admin only |
 
+## Authentication & Token Storage
+
+JWTs are issued by the server on login and stored client-side. All protected API requests require the `Authorization: Bearer <token>` header.
+
+| Platform | Storage Mechanism |
+|---|---|
+| Web | `localStorage` (keys: `token`, `user`) |
+| Native | `expo-secure-store` (token) + `AsyncStorage` (user metadata) |
+
+Tokens are validated on every protected route. Expired tokens are automatically cleared and the user is redirected to login.
+
 ## Tooling
 
 All three packages (client, server, native) share a consistent tooling setup:
@@ -276,9 +293,42 @@ Configured for deployment on **Vercel** (`vercel.json` included for routing rewr
 Can be deployed to any Node.js hosting provider (e.g., Render, Railway). Set all required environment variables and ensure the PostgreSQL credentials are correct. In production, environment variables are injected directly — no `.env` file is needed.
 
 ### Native App
-Configured for **EAS Build** (`eas.json` included). You can build APKs or iOS builds using Expo Application Services.
+Configured for **EAS Build** (use `eas.json.example` as a template). Two build profiles are defined:
 
-> **Note on Android Push Notifications:** A `google-services.json` file is included for Firebase Cloud Messaging (FCM) support, which is required for Android push notifications in a standalone build.
+| Profile | Distribution | Android Output | Use Case |
+|---|---|---|---|
+| `preview` | Internal | APK | Testing on a physical device before release |
+| `production` | Store | AAB | App store release (auto-increments version) |
+
+Before triggering a build, copy the EAS configuration template:
+```bash
+cp eas.json.example eas.json
+# Edit eas.json to configure your build profiles and environment variables
+```
+
+To trigger a build:
+```bash
+# Install EAS CLI if you haven't already
+npm install -g eas-cli
+
+# Authenticate with your Expo account
+eas login
+
+# Build for Android
+eas build --platform android --profile preview
+eas build --platform android --profile production
+
+# Build for iOS
+eas build --platform ios --profile production
+```
+
+> **Note on Android Push Notifications (`google-services.json`):**
+> Firebase Cloud Messaging (FCM) is required for Android push notifications. `google-services.json` is **not** committed to this repository. Before running an EAS build, you must:
+> 1. Go to the [Firebase Console](https://console.firebase.google.com) and open (or create) the project for this app.
+> 2. Download `google-services.json` from **Project Settings → Your apps → Android app**.
+> 3. Place it at `native/google-services.json`.
+>
+> EAS Credentials (`eas credentials`) manages your Android **keystore** and iOS **certificates** — it does **not** handle `google-services.json`. The file must be present locally before running `eas build`.
 
 #### Important Note on Push Notifications and Building
 When running the app locally using **Expo Go**, native push notification registration can cause issues or unsupported behavior in the Expo Go sandbox environment. For this reason, the push notification logic has been temporarily commented out for local development.
