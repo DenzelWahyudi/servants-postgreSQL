@@ -314,6 +314,12 @@ npm install -g eas-cli
 # Authenticate with your Expo account
 eas login
 
+# Initialize the project and link it to your Expo account
+# (This will configure the projectId in your app.json)
+eas init
+# Alternatively, if you already created the project on the Expo dashboard:
+# eas init --id <your-project-id>
+
 # Build for Android
 eas build --platform android --profile preview
 eas build --platform android --profile production
@@ -329,6 +335,16 @@ eas build --platform ios --profile production
 > 3. Place it at `native/google-services.json`.
 >
 > EAS Credentials (`eas credentials`) manages your Android **keystore** and iOS **certificates** — it does **not** handle `google-services.json`. The file must be present locally before running `eas build`.
+>
+> **FCM Server Setup for EAS Credentials:**
+> In addition to `google-services.json`, Expo needs permission to send push notifications through Firebase Cloud Messaging (FCM) on your behalf.
+> 1. Go to the [Firebase Console](https://console.firebase.google.com) and select your project.
+> 2. Navigate to **Project Settings** (gear icon) → **Service accounts** tab.
+> 3. Click **Generate new private key** and download the resulting JSON file.
+> 4. In your terminal, navigate to the `native` directory and run `eas credentials`.
+> 5. Select **Android** → your build profile (e.g., `preview`).
+> 6. Select the option to manage **Push Notifications** (FCM Service Account Key) and upload the JSON file you just downloaded.
+>    *(Tip: If the file is outside your project folder, you can provide the absolute path when prompted, such as `/Users/yourname/Downloads/your-project-firebase-adminsdk-abc123.json`)*
 
 #### Important Note on Push Notifications and Building
 When running the app locally using **Expo Go**, native push notification registration can cause issues or unsupported behavior in the Expo Go sandbox environment. For this reason, the push notification logic has been temporarily commented out for local development.
