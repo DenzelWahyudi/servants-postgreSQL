@@ -31,11 +31,13 @@ interface Assign {
 interface RelieveUser {
     userId: string
     name: string
+    pushToken: string | null
 }
 
 interface User {
     id: string
     name: string
+    pushToken: string | null
 }
 
 interface Role {
@@ -99,9 +101,13 @@ export function RolesCard({ serviceId, serviceName, serviceTime, serviceDate }: 
                             </td>
                             <td className="text-center">
                                 <span
-                                    className={`rounded-xl px-2.5 py-1 text-xs font-light text-zinc-100 shadow ${r.spotsFilled >= r.spotsTotal ? "bg-red-600" : "bg-green-600"}`}
+                                    className={`rounded-xl px-2.5 py-1 text-xs font-light text-zinc-100 shadow ${r.spotsFilled === r.spotsTotal ? "bg-red-600" : r.spotsFilled < r.spotsTotal ? "bg-green-600" : "bg-orange-600"}`}
                                 >
-                                    {r.spotsFilled >= r.spotsTotal ? "Filled" : "Open"}
+                                    {r.spotsFilled === r.spotsTotal
+                                        ? "Filled"
+                                        : r.spotsFilled < r.spotsTotal
+                                          ? "Open"
+                                          : "Over"}
                                 </span>
                             </td>
                             <td>
@@ -212,23 +218,35 @@ function RelieveRoleForm({ roleId, serviceName, roleName, onClose, token }: Role
         setLoading(true)
         setError(null)
 
-        const response = await fetch(`${API_URL}/api/assignments/relieve`, {
-            method: "DELETE",
-            headers: {
-                "Content-Type": "application/json",
-                Authorization: `Bearer ${token}`
-            },
-            body: JSON.stringify({ userId, roleId })
-        })
-        const data = await response.json()
-        if (!response.ok) {
-            setError(data.message || "Failed to relieve user")
-            setLoading(false)
-            return
-        }
+        const selectedUser = users?.find((user) => user.userId === userId)
 
-        setLoading(false)
-        if (onClose) onClose()
+        try {
+            const response = await fetch(`${API_URL}/api/assignments/relieve`, {
+                method: "DELETE",
+                headers: {
+                    "Content-Type": "application/json",
+                    Authorization: `Bearer ${token}`
+                },
+                body: JSON.stringify({
+                    userId,
+                    roleId,
+                    pushToken: selectedUser?.pushToken || undefined,
+                    serviceName,
+                    roleName
+                })
+            })
+            const data = await response.json()
+            if (!response.ok) {
+                setError(data.message || "Failed to relieve user")
+                return
+            }
+
+            if (onClose) onClose()
+        } catch {
+            setError("Could not connect to server")
+        } finally {
+            setLoading(false)
+        }
     }
 
     return (
@@ -308,6 +326,8 @@ function AssignRoleForm({ roleId, serviceName, roleName, onClose, token }: RoleF
     async function handleAssign(userId: string, roleId: string) {
         setLoading(true)
         setError(null)
+        const selectedUser = users?.find((user) => user.id === userId)
+
         try {
             const response = await fetch(`${API_URL}/api/assignments/admin`, {
                 method: "POST",
@@ -318,23 +338,25 @@ function AssignRoleForm({ roleId, serviceName, roleName, onClose, token }: RoleF
                 body: JSON.stringify({
                     userId,
                     roleId,
-                    status: "confirmed"
+                    status: "confirmed",
+                    pushToken: selectedUser?.pushToken || undefined,
+                    serviceName,
+                    roleName
                 })
             })
 
             const data = await response.json()
             if (!response.ok) {
                 setError(data.message || "Assigning failed!")
-                setLoading(false)
                 return
             }
-
-            setLoading(false)
 
             if (onClose) onClose()
             else navigate("/admin/roles")
         } catch {
             setError("Could not connect to server")
+        } finally {
+            setLoading(false)
         }
     }
 
