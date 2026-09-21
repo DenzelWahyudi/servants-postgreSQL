@@ -24,9 +24,9 @@ interface Schedule {
 }
 
 interface Role {
-    id?: string
-    serviceId?: string
-    name?: string
+    id: string
+    serviceId: string
+    name: string
     spotsTotal: number
     spotsFilled: number
 }
@@ -46,7 +46,7 @@ interface Service {
     date: string
     time: string
     status: string
-    roles?: Role[]
+    roles: Role[]
 }
 
 interface HomeData {
