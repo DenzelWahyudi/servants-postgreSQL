@@ -132,13 +132,6 @@ async function getUserSchedule(req, res, next) {
 
         const success = await assignmentsService.getUserSchedule(userId);
 
-        if (!success.length) {
-            throw errorResponder(
-                errorTypes.UNPROCESSABLE_ENTITY,
-                'Failed to get user schedule'
-            );
-        }
-
         return res.status(200).json(success);
     } catch (error) {
         next(error);
